@@ -6,7 +6,7 @@ from blueprints.helpers import admin_required
 from extensions import db
 from models import (
     User, QuizAttempt, PhishingResult, Badge,
-    CourseProgress, LessonProgress,
+    CourseProgress, LessonProgress, ThreatScan,
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
@@ -49,7 +49,7 @@ def delete_user(user_id):
         return jsonify(error="Нельзя удалить администратора"), 400
 
     # чистим зависимые записи, чтобы не оставлять «сирот»
-    for model in (QuizAttempt, PhishingResult, Badge, CourseProgress, LessonProgress):
+    for model in (QuizAttempt, PhishingResult, Badge, CourseProgress, LessonProgress, ThreatScan):
         model.query.filter_by(user_id=user.id).delete()
     db.session.delete(user)
     db.session.commit()

@@ -373,3 +373,45 @@ input:focus {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+.scan-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--gray-light);
+    color: var(--gray-muted);
+}
+.scan-badge-ok { background: #e6f7ee; color: #1aa64b; }
+.scan-badge-warn { background: #fff8e6; color: #b45309; }
+
+.scan-drop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    border: 2px dashed var(--gray-muted);
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    text-align: center;
+    color: var(--gray-muted);
+    font-size: 14px;
+    transition: border-color .2s, background .2s;
+}
+.scan-drop:hover, .scan-drop-hover {
+    border-color: var(--primary);
+    background: #fdeaeb;
+    color: #163e59;
+}
+
+.scan-history-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-light);
+    flex-wrap: wrap;
+}
+.scan-history-row:last-child { border-bottom: none; }

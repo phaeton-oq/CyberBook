@@ -4,7 +4,7 @@
 (gpt-oss-120b), который обучает сотрудников, генерирует квизы и фишинговые письма,
 симулирует атаки и разбирает ошибки.
 
-**Стек:** Python Flask + SQLite + vanilla JS. AI — Cerebras (OpenAI-совместимый API).
+**Стек:** Python Flask + SQLite + vanilla JS. AI: Cerebras (OpenAI-совместимый API).
 
 ## Быстрый старт
 ```powershell
@@ -30,4 +30,4 @@ python app.py
 - Сканер ссылок/файлов (VirusTotal + AI)
 - Статистика, Security Score, бейджи, экспорт отчётов
 
-См. [API.md](API.md) — контракт эндпоинтов, [TASKS.md](TASKS.md) — распределение задач.
+См. [API.md](API.md): контракт эндпоинтов, [TASKS.md](TASKS.md): распределение задач.

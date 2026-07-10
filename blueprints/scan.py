@@ -123,10 +123,8 @@ def scan_file():
     filename = ""
     sha256 = ""
 
-    if request.content_type and "multipart/form-data" in request.content_type:
-        upload = request.files.get("file")
-        if not upload or not upload.filename:
-            return jsonify(error="Загрузите файл в поле file"), 400
+    upload = request.files.get("file")
+    if upload and upload.filename:
         filename = secure_filename(upload.filename) or "upload.bin"
         blob = upload.read(max_bytes + 1)
         if len(blob) > max_bytes:

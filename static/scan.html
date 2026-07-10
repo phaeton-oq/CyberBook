@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Сканер угроз</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-link">Главная</a>
+            <a href="courses.html" class="nav-link">Курсы</a>
+            <a href="quiz.html" class="nav-link">Тесты</a>
+            <a href="inbox.html" class="nav-link">Инбокс</a>
+            <a href="scan.html" class="nav-link active">Сканер</a>
+            <a href="chat.html" class="nav-link">AI-Чат</a>
+            <a href="rating.html" class="nav-link">Рейтинг</a>
+            <a href="achievements.html" class="nav-link">Ачивки</a>
+            <a href="admin.html" class="nav-link">Админ</a>
+        </nav>
+        <div class="user-icon">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+            <div>
+                <h2>Проверка ссылок и файлов</h2>
+                <p style="color:var(--gray-muted);">Проверка через VirusTotal и AI</p>
+            </div>
+            <span id="vt-status" class="scan-badge">…</span>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:24px;">
+            <div class="box">
+                <h3>Проверить ссылку</h3>
+                <p style="color:var(--gray-muted);font-size:14px;margin:8px 0 12px;">Вставьте URL из письма или мессенджера</p>
+                <input type="url" id="scan-url-input" class="input-field" placeholder="https://example.com/login">
+                <button class="btn btn-main" style="margin-top:12px;width:100%;" onclick="runUrlScan()">Проверить ссылку</button>
+            </div>
+            <div class="box">
+                <h3>Проверить файл</h3>
+                <p style="color:var(--gray-muted);font-size:14px;margin:8px 0 12px;" id="scan-file-hint">До 32 МБ · отправка в VirusTotal</p>
+                <label class="scan-drop" id="scan-drop">
+                    <input type="file" id="scan-file-input" hidden onchange="onFilePicked(this)">
+                    <span id="scan-file-label">Нажмите или перетащите файл</span>
+                </label>
+                <button class="btn btn-main" style="margin-top:12px;width:100%;" id="scan-file-btn" onclick="runFileScan()" disabled>Проверить файл</button>
+            </div>
+        </div>
+
+        <div id="scan-result"></div>
+
+        <div class="box" style="margin-top:24px;">
+            <h3>История проверок</h3>
+            <div id="scan-history" style="margin-top:12px;color:var(--gray-muted);">Загрузка…</div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

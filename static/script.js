@@ -14,6 +14,17 @@ async function apiFetch(path, { method = "GET", body } = {}) {
     }
     return data;
 }
+async function apiUpload(path, formData) {
+    const res = await fetch(path, { method: "POST", credentials: "same-origin", body: formData });
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok) {
+        const err = new Error((data && data.error) || `Ошибка ${res.status}`);
+        err.status = res.status;
+        throw err;
+    }
+    return data;
+}
 const API = {
     me: () => apiFetch("/api/auth/me"),
     login: (email, password) => apiFetch("/api/auth/login", { method: "POST", body: { email, password } }),
@@ -37,6 +48,14 @@ const API = {
     myStats: () => apiFetch("/api/stats/me"),
     leaderboard: () => apiFetch("/api/stats/leaderboard"),
     usersStats: () => apiFetch("/api/stats/users"),
+    scanStatus: () => apiFetch("/api/scan/status"),
+    scanHistory: () => apiFetch("/api/scan/history"),
+    scanUrl: (url) => apiFetch("/api/scan/url", { method: "POST", body: { url } }),
+    scanFile: (file) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        return apiUpload("/api/scan/file", fd);
+    },
 };
 
 // ---------- утилиты ----------
@@ -247,6 +266,149 @@ async function sendChatMessage() {
     area.scrollTop = area.scrollHeight;
 }
 
+// ---------- сканер угроз ----------
+const SCAN_VERDICT = {
+    clean: { label: "Безопасно", color: "#1aa64b" },
+    suspicious: { label: "Подозрительно", color: "#f59e0b" },
+    malicious: { label: "Опасно", color: "#e30613" },
+    unknown: { label: "Неизвестно", color: "#6b7280" },
+};
+let scanPickedFile = null;
+
+function verdictMeta(v) {
+    return SCAN_VERDICT[v] || SCAN_VERDICT.unknown;
+}
+function renderVtStats(vt) {
+    if (!vt || !vt.available) return "<p style='color:var(--gray-muted);font-size:14px;'>VirusTotal не подключён, используются эвристика и AI</p>";
+    const s = vt.stats || {};
+    const parts = ["malicious", "suspicious", "harmless", "undetected"]
+        .filter(k => s[k] != null)
+        .map(k => `${k}: <strong>${s[k]}</strong>`);
+    let html = parts.length ? `<p style="font-size:14px;margin:8px 0;">VT: ${parts.join(" · ")}</p>` : "";
+    if (vt.not_in_db) html += `<p style="color:var(--warning);font-size:14px;">Файл не найден в базе VT</p>`;
+    if (vt.threat_names && vt.threat_names.length) {
+        html += `<p style="font-size:14px;"><strong>Угрозы:</strong> ${esc(vt.threat_names.slice(0, 5).join(", "))}</p>`;
+    }
+    return html;
+}
+function renderScanResult(res) {
+    const v = verdictMeta(res.verdict);
+    const flags = (res.red_flags && res.red_flags.length)
+        ? `<ul style="margin:8px 0 0 18px;">${res.red_flags.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "";
+    const recs = (res.recommendations && res.recommendations.length)
+        ? `<p style="margin-top:12px;"><strong>Рекомендации:</strong></p><ul style="margin:4px 0 0 18px;">${res.recommendations.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : "";
+    const ai = res.ai_review ? `<div style="margin-top:12px;"><strong>AI-разбор:</strong> ${md(res.ai_review)}</div>` : "";
+    const badges = res.new_badges && res.new_badges.length
+        ? `<p style="margin-top:12px;">🎉 Новый значок: <strong>${esc(res.new_badges.join(", "))}</strong></p>` : "";
+    const target = res.target ? `<p style="font-size:14px;color:var(--gray-muted);word-break:break-all;">${esc(res.target)}</p>` : "";
+    const el = document.getElementById("scan-result");
+    if (!el) return;
+    el.innerHTML = `
+        <div class="box scan-result-box" style="border-left:4px solid ${v.color};animation:openAnim .3s ease;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                <h3 style="margin:0;">${v.label}</h3>
+                <span class="scan-badge" style="background:${v.color}22;color:${v.color};">${res.scan_type === "file" ? "Файл" : "Ссылка"}</span>
+            </div>
+            ${target}
+            ${renderVtStats(res.vt)}
+            ${flags ? `<p style="margin-top:12px;"><strong>🚩 Признаки:</strong>${flags}</p>` : ""}
+            ${ai}${recs}
+            <p style="margin-top:12px;font-size:14px;">Очки: <strong>${res.points != null ? res.points : "-"}</strong>${res.ai ? " · AI подключён" : ""}</p>
+            ${badges}
+        </div>`;
+    el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+async function loadScanHistory() {
+    const box = document.getElementById("scan-history");
+    if (!box) return;
+    try {
+        const rows = await API.scanHistory();
+        if (!rows.length) {
+            box.innerHTML = "<p style='color:var(--gray-muted);'>Пока нет проверок. Начните со ссылки или файла</p>";
+            return;
+        }
+        box.innerHTML = rows.map(r => {
+            const v = verdictMeta(r.verdict);
+            const dt = r.created_at ? new Date(r.created_at).toLocaleString("ru-RU") : "";
+            const type = r.scan_type === "file" ? "Файл" : "Ссылка";
+            return `<div class="scan-history-row">
+                <span class="scan-badge" style="background:${v.color}22;color:${v.color};">${v.label}</span>
+                <span style="font-size:13px;color:var(--gray-muted);">${type} · ${esc(dt)}</span>
+                <span style="flex:1;word-break:break-all;font-size:14px;">${esc(r.target)}</span>
+            </div>`;
+        }).join("");
+    } catch (e) {
+        box.textContent = e.message;
+    }
+}
+async function initScanner() {
+    await ensureAuth();
+    const statusEl = document.getElementById("vt-status");
+    const hintEl = document.getElementById("scan-file-hint");
+    try {
+        const st = await API.scanStatus();
+        if (statusEl) {
+            statusEl.textContent = st.virustotal_configured ? "VirusTotal подключён" : "Офлайн-режим (без VT)";
+            statusEl.className = "scan-badge " + (st.virustotal_configured ? "scan-badge-ok" : "scan-badge-warn");
+        }
+        if (hintEl) hintEl.textContent = `До ${st.max_file_mb} МБ · ${st.virustotal_configured ? "отправка в VirusTotal" : "эвристика + AI"}`;
+    } catch (e) {
+        if (statusEl) statusEl.textContent = "Ошибка статуса";
+    }
+    const drop = document.getElementById("scan-drop");
+    if (drop) {
+        drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("scan-drop-hover"); });
+        drop.addEventListener("dragleave", () => drop.classList.remove("scan-drop-hover"));
+        drop.addEventListener("drop", e => {
+            e.preventDefault();
+            drop.classList.remove("scan-drop-hover");
+            const f = e.dataTransfer.files[0];
+            if (f) setScanFile(f);
+        });
+    }
+    loadScanHistory();
+}
+function onFilePicked(input) {
+    if (input.files && input.files[0]) setScanFile(input.files[0]);
+}
+function setScanFile(file) {
+    scanPickedFile = file;
+    const label = document.getElementById("scan-file-label");
+    const btn = document.getElementById("scan-file-btn");
+    if (label) label.textContent = file.name;
+    if (btn) btn.disabled = false;
+}
+async function runUrlScan() {
+    const input = document.getElementById("scan-url-input");
+    const url = input && input.value.trim();
+    if (!url) { alert("Введите ссылку"); return; }
+    const box = document.getElementById("scan-result");
+    if (box) box.innerHTML = `<div class="box" style="color:var(--gray-muted);">Проверяем ссылку…</div>`;
+    try {
+        const res = await API.scanUrl(url);
+        renderScanResult(res);
+        loadScanHistory();
+    } catch (e) {
+        if (box) box.innerHTML = `<div class="box" style="border-left:4px solid #e30613;">${esc(e.message)}</div>`;
+    }
+}
+async function runFileScan() {
+    if (!scanPickedFile) { alert("Выберите файл"); return; }
+    const box = document.getElementById("scan-result");
+    if (box) box.innerHTML = `<div class="box" style="color:var(--gray-muted);">Проверяем файл…</div>`;
+    const btn = document.getElementById("scan-file-btn");
+    if (btn) btn.disabled = true;
+    try {
+        const res = await API.scanFile(scanPickedFile);
+        renderScanResult(res);
+        loadScanHistory();
+    } catch (e) {
+        if (box) box.innerHTML = `<div class="box" style="border-left:4px solid #e30613;">${esc(e.message)}</div>`;
+    } finally {
+        if (btn) btn.disabled = !scanPickedFile;
+    }
+}
+
 // ---------- инбокс (фишинг) ----------
 async function initInbox() {
     await ensureAuth();
@@ -420,6 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (has("courses-grid")) initCourses();
     else if (has("quiz-list")) initQuiz();
     else if (has("chat-area")) ensureAuth();
+    else if (has("scan-url-input")) initScanner();
     else if (has("inbox-list")) initInbox();
     else if (has("rating-list")) initRating();
     else if (has("achievements-grid")) initAchievements();
