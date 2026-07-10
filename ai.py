@@ -82,9 +82,20 @@ def _extract_json(text):
 # ----------------------------------------------------------------------------
 # 1. Чат-ассистент
 # ----------------------------------------------------------------------------
-def assistant_reply(user_message, history=None):
-    """history: [{'role': 'user'|'assistant', 'content': str}, ...]"""
-    messages = [{"role": "system", "content": SYSTEM_ASSISTANT}]
+def assistant_reply(user_message, history=None, user_context=None):
+    """
+    history: [{'role': 'user'|'assistant', 'content': str}, ...]
+    user_context: краткая справка о сотруднике (слабые темы, score) —
+                  ассистент подстраивает советы под конкретного человека.
+    """
+    system = SYSTEM_ASSISTANT
+    if user_context:
+        system += (
+            "\n\nКонтекст о сотруднике (используй, чтобы давать персональные советы и "
+            "мягко подтягивать его слабые места, но не зачитывай эти данные вслух):\n"
+            + user_context
+        )
+    messages = [{"role": "system", "content": system}]
     if history:
         messages.extend(history[-8:])  # держим короткий контекст
     messages.append({"role": "user", "content": user_message})

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberBook — Почта (тренажёр)</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .mail-layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; }
+    @media (max-width: 800px) { .mail-layout { grid-template-columns: 1fr; } }
+    .mail-list { display: flex; flex-direction: column; gap: 8px; max-height: 72vh; overflow-y: auto; }
+    .mail-item {
+      background: var(--card); border: 1px solid #262a33; border-radius: 12px;
+      padding: 12px 14px; cursor: pointer; transition: .12s;
+    }
+    .mail-item:hover { border-color: var(--mts-red); }
+    .mail-item.active { border-color: var(--mts-red); background: var(--card-2); }
+    .mail-item .from { font-weight: 700; font-size: 14px; }
+    .mail-item .subj { color: var(--muted); font-size: 13px; margin-top: 2px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mail-item .dot { float: right; font-size: 12px; }
+    .reader { min-height: 60vh; }
+    .reader .from-line { color: var(--muted); font-size: 14px; margin-bottom: 4px; }
+    .reader .from-line b { color: var(--text); }
+    .reader .mail-body { white-space: pre-wrap; background: #12141a; border-radius: 10px;
+      padding: 16px; margin: 16px 0; border: 1px solid #262a33; }
+    .verdict { border-radius: 12px; padding: 16px; margin-top: 12px; }
+    .verdict.good { background: rgba(46,193,107,.12); border: 1px solid var(--good); }
+    .verdict.bad { background: rgba(255,77,79,.12); border: 1px solid var(--bad); }
+    .flags li { margin: 4px 0; }
+    .empty { color: var(--muted); display: grid; place-items: center; height: 60vh; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="logo">CB</span> CyberBook</div>
+    <nav class="nav">
+      <a href="/dashboard.html">Обзор</a>
+      <a href="/courses.html">Обучение</a>
+      <a href="/inbox.html" class="active">Почта 📨</a>
+      <a href="/assistant.html">Ассистент 🤖</a>
+      <a href="/leaderboard.html">Рейтинг 🏆</a>
+      <a href="#" onclick="API.logout().then(()=>location.href='/index.html')">Выход</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>📨 Почтовый тренажёр</h1>
+    <p class="subtitle">Открой письмо и реши: это фишинг или можно доверять? Так ты тренируешь бдительность без риска.</p>
+
+    <div class="mail-layout">
+      <div class="mail-list" id="list"></div>
+      <div class="card reader" id="reader">
+        <div class="empty">← Выбери письмо слева</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script>
+    let emails = [];
+    let current = null;
+
+    function statusDot(e) {
+      if (!e.answered) return "";
+      return e.was_correct ? '<span class="dot">✅</span>' : '<span class="dot">❌</span>';
+    }
+
+    function renderList() {
+      document.getElementById("list").innerHTML = emails.map(e => `
+        <div class="mail-item ${current === e.id ? "active" : ""}" onclick="openEmail(${e.id})">
+          ${statusDot(e)}
+          <div class="from">${e.sender_name || e.sender}</div>
+          <div class="subj">${e.subject}</div>
+        </div>
+      `).join("");
+    }
+
+    async function openEmail(id) {
+      current = id;
+      renderList();
+      const e = await API.email(id);
+      const answered = emails.find(x => x.id === id)?.answered;
+
+      const buttons = answered ? "" : `
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn" onclick="answer(${id}, 'reported')">🚩 Сообщить о фишинге</button>
+          <button class="btn ghost" onclick="answer(${id}, 'trusted')">✅ Доверять письму</button>
+        </div>`;
+
+      document.getElementById("reader").innerHTML = `
+        <div class="from-line">От: <b>${e.sender_name || ""}</b> &lt;${e.sender}&gt;</div>
+        <h2 style="margin:6px 0;">${e.subject}</h2>
+        <div class="mail-body">${e.body}</div>
+        ${buttons}
+        <div id="result"></div>
+      `;
+
+      // если уже отвечал — показать разбор сразу
+      if (answered && e.red_flags !== undefined) {
+        showVerdict({
+          correct: emails.find(x => x.id === id).was_correct,
+          is_phishing: e.is_phishing,
+          red_flags: e.red_flags,
+          explanation: null,
+        }, true);
+      }
+    }
+
+    async function answer(id, action) {
+      const res = await API.answerPhishing(id, action);
+      // обновляем статус в списке
+      const item = emails.find(x => x.id === id);
+      item.answered = true; item.was_correct = res.correct;
+      renderList();
+      // убрать кнопки выбора после ответа
+      document.querySelectorAll(".reader .btn").forEach(b => b.remove());
+      showVerdict(res, false);
+    }
+
+    function showVerdict(res, replay) {
+      const flags = (res.red_flags && res.red_flags.length)
+        ? `<p style="margin:10px 0 4px;"><b>🚩 Признаки, на которые стоило обратить внимание:</b></p>
+           <ul class="flags">${res.red_flags.map(f => `<li>${f}</li>`).join("")}</ul>`
+        : (res.is_phishing ? "" : "<p>Это было легитимное письмо — доверять можно.</p>");
+
+      const ai = res.explanation
+        ? `<p style="margin-top:12px;"><b>🤖 Кибер-Ассистент:</b> ${res.explanation}</p>` : "";
+
+      const head = res.correct
+        ? "✅ Верно!" + (res.is_phishing ? " Ты распознал фишинг." : " Письмо действительно безопасное.")
+        : "❌ Ошибка." + (res.is_phishing ? " Это был фишинг." : " Это было безопасное письмо, ты зря насторожился.");
+
+      const scoreLine = (res.security_score !== undefined)
+        ? `<p style="margin-top:10px;">Security Score: <b>${res.security_score}/100</b></p>` : "";
+      const badges = (res.new_badges && res.new_badges.length)
+        ? `<p>🎉 Новый значок: ${res.new_badges.join(", ")}</p>` : "";
+
+      document.getElementById("result").innerHTML = `
+        <div class="verdict ${res.correct ? "good" : "bad"}">
+          <h3 style="margin:0 0 6px;">${head}</h3>
+          ${flags}${ai}${scoreLine}${badges}
+        </div>`;
+    }
+
+    (async () => {
+      await requireAuth();
+      emails = await API.inbox();
+      renderList();
+    })();
+  </script>
+</body>
+</html>
