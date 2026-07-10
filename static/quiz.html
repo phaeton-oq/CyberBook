@@ -28,30 +28,12 @@
 
     <main class="wrapper">
         <h2>Тестирование знаний</h2>
-
-        <div class="box">
-            <p class="q-title"><strong>Вопрос 1:</strong> Вам пришло письмо от имени директора с просьбой срочно перевести средства подрядчику. Ваши действия?</p>
-            <div class="q-list">
-                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q1-feedback')">Быстро выполню поручение, авторитет руководства важен.</button>
-                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, true, 'q1-feedback')">Свяжусь с директором по альтернативному проверенному каналу связи.</button>
-                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q1-feedback')">Перешлю коллегам, чтобы узнать их мнение.</button>
-            </div>
-            <div id="q1-feedback" class="alert-panel" style="display: none;">
-                <strong>Разбор ситуации:</strong> Это типичная атака класса CEO Fraud (социальная инженерия). Всегда верифицируйте критические запросы лично или по телефону.
-            </div>
+        <div id="quiz-picker" class="box">
+            <h3 style="margin-bottom:12px;">Выберите тест</h3>
+            <div id="quiz-list" class="grid-2"></div>
         </div>
-
-        <div class="box">
-            <p class="q-title"><strong>Вопрос 2:</strong> Какое из следующих подключений к интернету является наиболее опасным для передачи личных данных?</p>
-            <div class="q-list">
-                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q2-feedback')">Домашняя сеть Wi-Fi с паролем WPA3.</button>
-                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q2-feedback')">Мобильный интернет 4G/5G вашего оператора.</button>
-                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, true, 'q2-feedback')">Открытая Wi-Fi сеть в метро или кафе без пароля.</button>
-            </div>
-            <div id="q2-feedback" class="alert-panel" style="display: none;">
-                <strong>Разбор ситуации:</strong> Публичные незащищённые сети позволяют злоумышленникам перехватывать ваш трафик методом Man-in-the-Middle (MitM).
-            </div>
-        </div>
+        <div id="quiz-container"></div>
+        <div id="quiz-result"></div>
     </main>
 
     <script src="script.js"></script>

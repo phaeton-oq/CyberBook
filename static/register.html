@@ -9,20 +9,25 @@
     <section class="auth-panel">
         <div class="auth-side left">
             <h2>Регистрация</h2>
-            <form action="dashboard.html">
+            <form id="register-form" onsubmit="event.preventDefault(); doRegister();">
                 <div class="field">
                     <label>Имя</label>
-                    <input type="text" placeholder="Введите ваше имя" required>
+                    <input type="text" id="reg-name" placeholder="Введите ваше имя" required>
                 </div>
                 <div class="field">
                     <label>Электронная почта</label>
-                    <input type="email" placeholder="example@mts.ru" required>
+                    <input type="email" id="reg-email" placeholder="example@mts.ru" required>
+                </div>
+                <div class="field">
+                    <label>Отдел</label>
+                    <input type="text" id="reg-department" placeholder="Например: Продажи">
                 </div>
                 <div class="field">
                     <label>Пароль</label>
-                    <input type="password" placeholder="Придумайте пароль" required>
+                    <input type="password" id="reg-password" placeholder="Придумайте пароль" required>
                 </div>
                 <button type="submit" class="btn btn-main">Зарегистрироваться</button>
+                <p id="auth-error" style="color: var(--primary); margin-top: 12px; min-height: 18px;"></p>
             </form>
             <p class="auth-switch">Уже есть аккаунт? <a href="index.html">Войти</a></p>
         </div>
@@ -33,5 +38,6 @@
             </div>
         </div>
     </section>
+    <script src="script.js"></script>
 </body>
 </html>

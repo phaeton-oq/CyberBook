@@ -28,20 +28,8 @@
 
     <main class="wrapper">
         <h2>Входящие сообщения (Симулятор)</h2>
-        <div class="box mail-box">
-            <div class="mail-top">
-                <strong>От:</strong> security-alert@microsoft-support-security.ru <br>
-                <strong>Тема:</strong> Срочно смените пароль от корпоративной почты!
-            </div>
-            <div class="mail-text">
-                Уважаемый сотрудник, мы зафиксировали подозрительный вход в вашу учётную запись. Чтобы избежать блокировки, немедленно подтвердите свой пароль: <a href="#" onclick="event.preventDefault()">http://corp-auth-check.ru/login</a>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-bad" onclick="handlePhishing(false)">Отметить как безопасное</button>
-                <button class="btn btn-ok" onclick="handlePhishing(true)">Пожаловаться на фишинг</button>
-            </div>
-            <div id="inbox-feedback" class="alert-panel" style="display: none;"></div>
-        </div>
+        <p style="color: var(--gray-muted); margin-bottom: 24px;">Открой письмо и реши: это фишинг или можно доверять?</p>
+        <div id="inbox-list"></div>
     </main>
 
     <script src="script.js"></script>

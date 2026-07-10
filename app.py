@@ -44,10 +44,14 @@ def create_app(config_class=Config):
 
     @app.get("/<path:page>")
     def pages(page):
+        # 1) прямая отдача существующего файла (style.css, script.js, картинки)
+        if os.path.isfile(os.path.join(app.static_folder, page)):
+            return send_from_directory(app.static_folder, page)
+        # 2) страница по имени: /dashboard -> dashboard.html
         target = page if page.endswith(".html") else f"{page}.html"
-        full = os.path.join(app.static_folder, target)
-        if os.path.isfile(full):
+        if os.path.isfile(os.path.join(app.static_folder, target)):
             return send_from_directory(app.static_folder, target)
+        # 3) fallback — на вход
         return send_from_directory(app.static_folder, "index.html")
 
     @app.get("/api/health")

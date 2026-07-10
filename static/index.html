@@ -9,18 +9,20 @@
     <section class="auth-panel">
         <div class="auth-side left">
             <h2>Вход в аккаунт</h2>
-            <form action="dashboard.html">
+            <form id="login-form" onsubmit="event.preventDefault(); doLogin();">
                 <div class="field">
                     <label>Электронная почта</label>
-                    <input type="email" placeholder="example@mts.ru" required>
+                    <input type="email" id="login-email" placeholder="example@mts.ru" value="ivan@mts.ru" required>
                 </div>
                 <div class="field">
                     <label>Пароль</label>
-                    <input type="password" placeholder="Введите пароль" required>
+                    <input type="password" id="login-password" placeholder="Введите пароль" value="user123" required>
                 </div>
                 <button type="submit" class="btn btn-main">Войти</button>
+                <p id="auth-error" style="color: var(--primary); margin-top: 12px; min-height: 18px;"></p>
             </form>
             <p class="auth-switch">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+            <p class="auth-switch" style="margin-top:8px; font-size:13px;">Демо: ivan@mts.ru / user123 · admin@mts.ru / admin123</p>
         </div>
         <div class="auth-side right">
             <div class="logo-box">
@@ -29,5 +31,6 @@
             </div>
         </div>
     </section>
+    <script src="script.js"></script>
 </body>
 </html>
