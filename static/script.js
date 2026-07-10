@@ -11,6 +11,7 @@ async function apiFetch(path, { method = "GET", body } = {}) {
     }
     return data;
 }
+// multipart для /api/scan/file — нельзя слать Content-Type: application/json
 async function apiUpload(path, formData) {
     const res = await fetch(path, { method: "POST", credentials: "same-origin", body: formData });
     let data = null;
@@ -267,26 +268,70 @@ let scanPickedFile = null;
 function verdictMeta(v) {
     return SCAN_VERDICT[v] || SCAN_VERDICT.unknown;
 }
-function renderVtStats(vt) {
-    if (!vt || !vt.available) return "<p style='color:var(--gray-muted);font-size:14px;'>VirusTotal не подключён, используются эвристика и AI</p>";
-    const s = vt.stats || {};
-    const parts = ["malicious", "suspicious", "harmless", "undetected"]
-        .filter(k => s[k] != null)
-        .map(k => `${k}: <strong>${s[k]}</strong>`);
-    let html = parts.length ? `<p style="font-size:14px;margin:8px 0;">VT: ${parts.join(" · ")}</p>` : "";
-    if (vt.not_in_db) html += `<p style="color:var(--warning);font-size:14px;">Файл не найден в базе VT</p>`;
-    if (vt.threat_names && vt.threat_names.length) {
-        html += `<p style="font-size:14px;"><strong>Угрозы:</strong> ${esc(vt.threat_names.slice(0, 5).join(", "))}</p>`;
+const VT_STAT_LABELS = {
+    malicious: "вредоносных",
+    suspicious: "подозрительных",
+    harmless: "безопасных",
+    undetected: "чистых",
+    failure: "ошибок",
+    "type-unsupported": "не поддерживают тип",
+};
+function formatBytes(n) {
+    if (!n) return "";
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / (1024 * 1024)).toFixed(1) + " MB";
+}
+function renderVtStats(vt, scanType) {
+    const isFile = scanType === "file";
+    const subject = isFile ? "файл" : "ссылку";
+    const adj = isFile ? "опасным" : "опасной";
+    if (!vt || !vt.available) {
+        if (vt && vt.not_in_db) {
+            return `<p style='color:var(--warning);font-size:14px;'>${isFile ? "Файл" : "Ссылка"} ещё индексируется в VT. Подождите минуту и проверьте снова.</p>`;
+        }
+        return "<p style='color:var(--gray-muted);font-size:14px;'>VirusTotal не подключён, используются эвристика и AI</p>";
     }
-    return html;
+    const s = vt.stats || {};
+    let html = "";
+    if (vt.detection_ratio) {
+        const [det, total] = vt.detection_ratio.split("/");
+        const pct = total > 0 ? Math.round((det / total) * 100) : 0;
+        html += `<p style="font-size:15px;margin:8px 0;"><strong>${det} из ${total}</strong> движков считают ${subject} ${adj} (${pct}%)</p>`;
+    }
+    const rows = Object.keys(VT_STAT_LABELS)
+        .filter(k => s[k] != null && s[k] > 0)
+        .map(k => `<span style="margin-right:12px;font-size:14px;">${VT_STAT_LABELS[k]}: <strong>${s[k]}</strong></span>`);
+    if (rows.length) html += `<div style="margin:8px 0;">${rows.join("")}</div>`;
+    const meta = [];
+    if (vt.type_description) meta.push(esc(vt.type_description));
+    if (vt.size) meta.push(formatBytes(vt.size));
+    if (vt.meaningful_name) meta.push(esc(vt.meaningful_name));
+    if (meta.length) html += `<p style="font-size:13px;color:var(--gray-muted);">${meta.join(" · ")}</p>`;
+    if (vt.threat_names && vt.threat_names.length) {
+        html += `<p style="font-size:14px;margin-top:8px;"><strong>Детекты:</strong> ${esc(vt.threat_names.join(", "))}</p>`;
+    }
+    if (vt.gui_url) {
+        html += `<a href="${esc(vt.gui_url)}" target="_blank" rel="noopener" class="btn btn-sub" style="margin-top:10px;display:inline-block;">Отчёт в VirusTotal</a>`;
+    }
+    if (vt.queued) {
+        html += `<p style="color:var(--warning);font-size:13px;margin-top:8px;">Анализ ещё идёт, цифры могут обновиться</p>`;
+    }
+    return html || "<p style='color:var(--gray-muted);font-size:14px;'>VT не вернул статистику</p>";
 }
 function renderScanResult(res) {
     const v = verdictMeta(res.verdict);
+    const heur = (res.heuristic_flags && res.heuristic_flags.length)
+        ? `<div style="margin-top:12px;padding:10px 14px;background:#fff8e6;border-radius:8px;font-size:14px;">
+            <strong>Эвристика фишинга</strong> <span style="color:var(--gray-muted);">(учебная подсказка, не вердикт VT)</span>
+            <ul style="margin:6px 0 0 18px;">${res.heuristic_flags.map(f => `<li>${esc(f)}</li>`).join("")}</ul>
+           </div>` : "";
     const flags = (res.red_flags && res.red_flags.length)
         ? `<ul style="margin:8px 0 0 18px;">${res.red_flags.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "";
     const recs = (res.recommendations && res.recommendations.length)
         ? `<p style="margin-top:12px;"><strong>Рекомендации:</strong></p><ul style="margin:4px 0 0 18px;">${res.recommendations.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : "";
-    const ai = res.ai_review ? `<div style="margin-top:12px;"><strong>AI-разбор:</strong> ${md(res.ai_review)}</div>` : "";
+    const ai = res.ai_review
+        ? `<div style="margin-top:12px;"><strong>Разбор:</strong> ${md(res.ai_review)}</div>` : "";
     const badges = res.new_badges && res.new_badges.length
         ? `<p style="margin-top:12px;">🎉 Новый значок: <strong>${esc(res.new_badges.join(", "))}</strong></p>` : "";
     const target = res.target ? `<p style="font-size:14px;color:var(--gray-muted);word-break:break-all;">${esc(res.target)}</p>` : "";
@@ -299,8 +344,9 @@ function renderScanResult(res) {
                 <span class="scan-badge" style="background:${v.color}22;color:${v.color};">${res.scan_type === "file" ? "Файл" : "Ссылка"}</span>
             </div>
             ${target}
-            ${renderVtStats(res.vt)}
-            ${flags ? `<p style="margin-top:12px;"><strong>🚩 Признаки:</strong>${flags}</p>` : ""}
+            ${renderVtStats(res.vt, res.scan_type)}
+            ${heur}
+            ${flags ? `<p style="margin-top:12px;"><strong>Детекты VT:</strong>${flags}</p>` : ""}
             ${ai}${recs}
             <p style="margin-top:12px;font-size:14px;">Очки: <strong>${res.points != null ? res.points : "-"}</strong>${res.ai ? " · AI подключён" : ""}</p>
             ${badges}
@@ -384,10 +430,11 @@ async function runUrlScan() {
 async function runFileScan() {
     if (!scanPickedFile) { alert("Выберите файл"); return; }
     const box = document.getElementById("scan-result");
-    if (box) box.innerHTML = `<div class="box" style="color:var(--gray-muted);">Проверяем файл…</div>`;
+    if (box) box.innerHTML = `<div class="box" style="color:var(--gray-muted);">Проверяем файл в VirusTotal, это может занять до минуты…</div>`;
     const btn = document.getElementById("scan-file-btn");
     if (btn) btn.disabled = true;
     try {
+        // VT может думать до ~2 мин на больших файлах
         const res = await API.scanFile(scanPickedFile);
         renderScanResult(res);
         loadScanHistory();

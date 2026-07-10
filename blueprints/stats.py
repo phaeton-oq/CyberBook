@@ -262,6 +262,7 @@ def export_pdf(user_id):
     pdf = FPDF()
     pdf.add_page()
     if font_path.exists():
+        # DejaVu из assets/fonts — иначе кириллица в PDF не отрисуется
         pdf.add_font("DejaVu", "", str(font_path))
         pdf.set_font("DejaVu", size=16)
         pdf.cell(0, 12, "CyberBook: отчёт по сотруднику", ln=True)
@@ -273,6 +274,7 @@ def export_pdf(user_id):
         pdf.cell(0, 8, f"Квизы: средний балл {report['quiz']['avg_score']}%", ln=True)
         pdf.cell(0, 8, f"Фишинг: {p['seen']} просмотров, {p['clicked']} кликов", ln=True)
     else:
+        # запасной вариант без кириллицы, если шрифт не положили в репозиторий
         pdf.set_font("Helvetica", size=12)
         pdf.cell(0, 8, f"CyberBook report (user #{user.id})", ln=True)
         pdf.cell(0, 8, f"Score {report['security_score']}, ochki {report['points']}", ln=True)

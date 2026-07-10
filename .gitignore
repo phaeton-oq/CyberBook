@@ -1,14 +1,48 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# venv
+.venv/
+venv/
+env/
+
+# тесты и покрытие
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# секреты и локальная БД
 .env
+.env.local
+.env.*.local
+.github-token
 .build-id
 *.db
 *.sqlite3
+
+# Flask
 instance/
-.venv/
-venv/
-.DS_Store
+
+# логи и временные файлы
+*.log
 server.log
 cookies.txt
 *.txt.tmp
-.github-token
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~

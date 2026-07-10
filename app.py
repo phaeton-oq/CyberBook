@@ -45,6 +45,7 @@ def create_app(config_class=Config):
 
     @app.get("/<path:page>")
     def pages(page):
+        # статика как есть; /dashboard -> dashboard.html; остальное -> index
         if os.path.isfile(os.path.join(app.static_folder, page)):
             return send_from_directory(app.static_folder, page)
         target = page if page.endswith(".html") else f"{page}.html"

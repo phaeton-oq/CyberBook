@@ -45,6 +45,7 @@ def delete_user(user_id):
     if user.role == "admin":
         return jsonify(error="Нельзя удалить администратора"), 400
 
+    # сначала дочерние записи, потом User (ThreatScan тоже привязан к user_id)
     for model in (QuizAttempt, PhishingResult, Badge, CourseProgress, LessonProgress, ThreatScan):
         model.query.filter_by(user_id=user.id).delete()
     db.session.delete(user)

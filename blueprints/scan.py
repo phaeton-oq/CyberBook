@@ -11,6 +11,7 @@ import ai
 import scoring
 import virustotal as vt
 
+# /api/scan/* — проверка URL и файлов через VT + эвристика + опционально Cerebras
 scan_bp = Blueprint("scan", __name__, url_prefix="/api/scan")
 
 _SHA256 = re.compile(r"^[a-fA-F0-9]{64}$")
@@ -25,6 +26,15 @@ def _pick_verdict(*values):
         if _VERDICT_RANK.get(val, 0) > _VERDICT_RANK.get(best, 0):
             best = val
     return best
+
+
+def _resolve_verdict(vt_report, ai_data):
+    """Если VT вернул полную статистику, вердикт берём от VT, не от эвристики."""
+    stats = (vt_report or {}).get("stats") or {}
+    vt_v = (vt_report or {}).get("verdict")
+    if vt._has_vt_stats(stats) and vt_v in ("clean", "malicious", "suspicious"):
+        return vt_v
+    return _pick_verdict(vt_v, ai_data.get("verdict"))
 
 
 def _persist(scan_type, target, verdict, vt_report, ai_data, ai_used):
@@ -48,13 +58,31 @@ def _persist(scan_type, target, verdict, vt_report, ai_data, ai_used):
     return row, badges
 
 
-def _vt_block(report):
-    return {
-        "available": vt.is_configured() and report is not None,
-        "stats": (report or {}).get("stats") or {},
+def _vt_block(report, sha256=None, url=None):
+    stats = (report or {}).get("stats") or {}
+    has_stats = bool(stats) and any(stats.values())
+    block = {
+        "available": vt.is_configured() and report is not None and (has_stats or not (report or {}).get("not_in_db")),
+        "stats": stats,
         "threat_names": (report or {}).get("threat_names") or [],
         "categories": (report or {}).get("categories") or {},
+        "type_description": (report or {}).get("type_description"),
+        "size": (report or {}).get("size"),
+        "meaningful_name": (report or {}).get("meaningful_name"),
+        "not_in_db": bool((report or {}).get("not_in_db")) and not has_stats,
+        "queued": bool((report or {}).get("queued")),
     }
+    if sha256:
+        block["gui_url"] = f"https://www.virustotal.com/gui/file/{sha256}"
+    if url:
+        block["gui_url"] = f"https://www.virustotal.com/gui/url/{vt._url_id(url)}"
+    engines = sum(stats.get(k, 0) or 0 for k in (
+        "malicious", "suspicious", "harmless", "undetected", "failure", "type-unsupported",
+    ))
+    detections = (stats.get("malicious") or 0) + (stats.get("suspicious") or 0)
+    if engines:
+        block["detection_ratio"] = f"{detections}/{engines}"
+    return block
 
 
 def _response(row, payload):
@@ -96,18 +124,25 @@ def scan_url():
 
     flags = vt.heuristic_url_flags(url)
     ai_data, ai_used = ai.review_threat_scan("url", url, vt_report, flags)
-    verdict = _pick_verdict((vt_report or {}).get("verdict"), ai_data.get("verdict"))
+    verdict = _resolve_verdict(vt_report, ai_data)
     row, badges = _persist("url", url, verdict, vt_report, ai_data, ai_used)
+
+    vt_v = (vt_report or {}).get("verdict")
+    stats = (vt_report or {}).get("stats") or {}
+    if vt._has_vt_stats(stats) and vt_v == "clean":
+        red_flags = list((vt_report or {}).get("threat_names") or [])
+    else:
+        red_flags = ai_data.get("red_flags") or list((vt_report or {}).get("threat_names") or [])
 
     return _response(row, {
         "scan_type": "url",
         "target": url,
         "verdict": verdict,
-        "vt": _vt_block(vt_report),
+        "vt": _vt_block(vt_report, url=url),
         "heuristic_flags": flags,
         "ai_review": ai_data.get("summary", ""),
         "recommendations": ai_data.get("recommendations") or [],
-        "red_flags": ai_data.get("red_flags") or flags,
+        "red_flags": red_flags,
         "ai": ai_used,
         "new_badges": badges,
     })
@@ -124,6 +159,7 @@ def scan_file():
 
     upload = request.files.get("file")
     if upload and upload.filename:
+        # multipart из scan.html (FormData, не JSON)
         filename = secure_filename(upload.filename) or "upload.bin"
         blob = upload.read(max_bytes + 1)
         if len(blob) > max_bytes:
@@ -145,18 +181,17 @@ def scan_file():
 
     target = f"{filename} ({sha256})" if sha256 else filename
     flags = []
-    if vt_report and vt_report.get("not_in_db"):
-        flags.append("Файл не найден в базе VT")
+    if vt_report and vt_report.get("not_in_db") and not (vt_report.get("stats") or {}):
+        flags.append("Файл ещё не проиндексирован в VT, попробуйте позже")
     risky = vt.risky_extension(filename)
     if risky:
         flags.append(f"Расширение .{risky} может запускать код")
 
     ai_data, ai_used = ai.review_threat_scan("file", target, vt_report, flags)
-    verdict = _pick_verdict((vt_report or {}).get("verdict"), ai_data.get("verdict"))
+    verdict = _resolve_verdict(vt_report, ai_data)
     row, badges = _persist("file", target, verdict, vt_report, ai_data, ai_used)
 
-    vt_payload = _vt_block(vt_report)
-    vt_payload["not_in_db"] = bool((vt_report or {}).get("not_in_db"))
+    vt_payload = _vt_block(vt_report, sha256=sha256)
 
     return _response(row, {
         "scan_type": "file",

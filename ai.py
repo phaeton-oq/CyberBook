@@ -3,6 +3,8 @@ import re
 
 from flask import current_app
 
+# Cerebras (OpenAI-compatible). Нет ключа или ошибка API -> статические fallback-и ниже.
+
 try:
     from openai import OpenAI
 except ImportError:
@@ -201,47 +203,88 @@ def explain_mistake(context):
     )
 
 
-def _threat_review_fallback(vt_report, flags):
+def _threat_review_fallback(vt_report, flags, scan_type="file"):
     vt_verdict = (vt_report or {}).get("verdict", "unknown")
-    merged = list(flags)
-    if vt_report and vt_report.get("threat_names"):
-        merged.extend(vt_report["threat_names"][:5])
+    is_url = scan_type == "url"
+    threats = (vt_report or {}).get("threat_names") or []
+    merged = threats[:5] + list(flags)
 
-    if vt_verdict == "malicious":
-        return {
-            "verdict": "malicious",
-            "summary": "Обнаружены признаки угрозы. Не открывайте и не переходите.",
-            "recommendations": [
-                "Не переходите по ссылке",
-                "Сообщите в службу безопасности",
-                "Удалите вложение",
-            ],
-            "red_flags": merged[:8],
-        }
-    if vt_verdict == "suspicious" or merged:
-        return {
-            "verdict": "suspicious",
-            "summary": "Есть подозрительные признаки. Действуйте осторожно.",
-            "recommendations": [
-                "Не вводите данные",
-                "Проверьте отправителя",
-                "При сомнениях — в СБ",
-            ],
-            "red_flags": merged[:8],
-        }
+    stats = (vt_report or {}).get("stats") or {}
+    mal = stats.get("malicious") or 0
+    sus = stats.get("suspicious") or 0
+    engines = sum(stats.get(k, 0) or 0 for k in (
+        "malicious", "suspicious", "harmless", "undetected", "failure", "type-unsupported",
+    ))
+    ratio = f"{mal + sus}/{engines}" if engines else ""
+
+    rec_url = [
+        "Не переходите по ссылке без проверки отправителя",
+        "Сверьте домен с официальным сайтом",
+        "При сомнениях обратитесь в СБ",
+    ]
+    rec_file = [
+        "Не открывайте файл",
+        "Сообщите в службу безопасности",
+        "Удалите вложение",
+    ]
+    recs = rec_url if is_url else rec_file
+
     if vt_verdict == "clean":
+        summary = f"VT: {ratio}. Вредоносных детектов нет." if ratio else "VT: вредоносных детектов нет."
+        if flags and is_url:
+            summary += " Эвристика видит признаки фишинга, но антивирусы ссылку не пометили."
+        elif flags:
+            summary += " Эвристика отметила несколько признаков."
         return {
             "verdict": "clean",
-            "summary": "Явных угроз не найдено, но оставайтесь бдительны.",
-            "recommendations": ["Сверяйте домен отправителя"],
+            "summary": summary,
+            "recommendations": recs[:2],
+            "red_flags": threats[:5],
+        }
+
+    if vt_verdict == "malicious":
+        summary = f"VT: {ratio}. " if ratio else ""
+        summary += "Обнаружены признаки угрозы."
+        if threats:
+            summary += f" Детекты: {', '.join(threats[:3])}."
+        return {
+            "verdict": "malicious",
+            "summary": summary,
+            "recommendations": recs,
             "red_flags": merged[:8],
         }
-    verdict = "suspicious" if merged else "unknown"
+
+    if vt_verdict == "suspicious":
+        summary = f"VT: {ratio}. " if ratio else ""
+        summary += "Антивирусы пометили как подозрительное."
+        if threats:
+            summary += f" Детекты: {', '.join(threats[:3])}."
+        return {
+            "verdict": "suspicious",
+            "summary": summary,
+            "recommendations": recs,
+            "red_flags": merged[:8],
+        }
+
+    if flags and is_url:
+        return {
+            "verdict": "suspicious",
+            "summary": "VT не дал отчёт. Эвристика видит признаки фишинга.",
+            "recommendations": recs,
+            "red_flags": list(flags)[:8],
+        }
+    if flags:
+        return {
+            "verdict": "suspicious",
+            "summary": "Данных VT мало, есть эвристические признаки.",
+            "recommendations": recs,
+            "red_flags": list(flags)[:8],
+        }
     return {
-        "verdict": verdict,
-        "summary": "Данных мало — лучше перестраховаться.",
-        "recommendations": ["Уточните у отправителя по доверенному каналу"],
-        "red_flags": merged[:8],
+        "verdict": "unknown",
+        "summary": "Данных мало, действуйте осторожно.",
+        "recommendations": recs[:2],
+        "red_flags": [],
     }
 
 
@@ -278,7 +321,7 @@ def review_threat_scan(scan_type, target, vt_report=None, heuristic_flags=None):
     data = _extract_json(raw)
     if data and data.get("summary"):
         return data, True
-    return _threat_review_fallback(vt_report, flags), False
+    return _threat_review_fallback(vt_report, flags, scan_type), False
 
 
 def review_suspicious_text(text, url_reports=None):
