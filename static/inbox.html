@@ -57,6 +57,7 @@
   </div>
 
   <script src="/static/js/api.js"></script>
+  <script src="/static/js/md.js"></script>
   <script>
     let emails = [];
     let current = null;
@@ -125,7 +126,7 @@
         : (res.is_phishing ? "" : "<p>Это было легитимное письмо — доверять можно.</p>");
 
       const ai = res.explanation
-        ? `<p style="margin-top:12px;"><b>🤖 Кибер-Ассистент:</b> ${res.explanation}</p>` : "";
+        ? `<div style="margin-top:12px;"><b>🤖 Кибер-Ассистент:</b> ${renderMarkdown(res.explanation)}</div>` : "";
 
       const head = res.correct
         ? "✅ Верно!" + (res.is_phishing ? " Ты распознал фишинг." : " Письмо действительно безопасное.")

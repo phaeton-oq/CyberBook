@@ -57,6 +57,7 @@
   </div>
 
   <script src="/static/js/api.js"></script>
+  <script src="/static/js/md.js"></script>
   <script>
     const history = [];   // [{role, content}] — контекст диалога для AI
     const log = document.getElementById("log");
@@ -65,7 +66,9 @@
       const div = document.createElement("div");
       div.className = "msg " + who;
       const label = who === "user" ? "Ты" : "Кибер-Ассистент";
-      div.innerHTML = `<div class="who">${label}</div>${escapeHtml(text)}` +
+      // ответы бота рендерим как markdown (жирный, списки), реплики юзера — просто экранируем
+      const body = who === "bot" ? renderMarkdown(text) : escapeHtml(text);
+      div.innerHTML = `<div class="who">${label}</div>${body}` +
         (note ? `<div class="fallback-note">${note}</div>` : "");
       log.appendChild(div);
       log.scrollTop = log.scrollHeight;
