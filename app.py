@@ -1,0 +1,74 @@
+"""
+CyberBook — точка входа.
+Один Flask-сервер: /api/* (JSON) + раздача статики фронта из static/.
+
+Запуск:
+    pip install -r requirements.txt
+    cp .env.example .env   # и вписать CEREBRAS_API_KEY
+    python seed.py          # наполнить демо-данными
+    python app.py           # http://localhost:5000
+"""
+import os
+from flask import Flask, send_from_directory, jsonify
+
+from config import Config
+from extensions import db, login_manager
+
+
+def create_app(config_class=Config):
+    app = Flask(__name__, static_folder="static", static_url_path="/static")
+    app.config.from_object(config_class)
+
+    db.init_app(app)
+    login_manager.init_app(app)
+
+    from models import User
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return db.session.get(User, int(user_id))
+
+    # API отвечает JSON-ом на 401, а не редиректом на страницу логина
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return jsonify(error="Требуется авторизация"), 401
+
+    # blueprints
+    from blueprints.auth import auth_bp
+    from blueprints.courses import courses_bp
+    from blueprints.quiz import quiz_bp
+    from blueprints.phishing import phishing_bp
+    from blueprints.assistant import assistant_bp
+    from blueprints.stats import stats_bp
+
+    for bp in (auth_bp, courses_bp, quiz_bp, phishing_bp, assistant_bp, stats_bp):
+        app.register_blueprint(bp)
+
+    # ---- раздача фронта (static/*.html) ----
+    @app.get("/")
+    def index():
+        return send_from_directory(app.static_folder, "index.html")
+
+    @app.get("/<path:page>")
+    def pages(page):
+        """Отдаёт любую страницу из static/ (index.html, dashboard.html и т.д.)."""
+        target = page if page.endswith(".html") else f"{page}.html"
+        full = os.path.join(app.static_folder, target)
+        if os.path.isfile(full):
+            return send_from_directory(app.static_folder, target)
+        return send_from_directory(app.static_folder, "index.html")
+
+    @app.get("/api/health")
+    def health():
+        return jsonify(status="ok", service="CyberBook")
+
+    with app.app_context():
+        db.create_all()
+
+    return app
+
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberBook — дашборд</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="logo">CB</span> CyberBook</div>
+    <nav class="nav">
+      <a href="/dashboard.html" class="active">Обзор</a>
+      <a href="/courses.html">Обучение</a>
+      <a href="/inbox.html">Почта 📨</a>
+      <a href="/assistant.html">Ассистент 🤖</a>
+      <a href="/leaderboard.html">Рейтинг 🏆</a>
+      <a href="#" onclick="API.logout().then(()=>location.href='/index.html')">Выход</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <h1>Привет, <span id="uname">…</span>!</h1>
+    <p class="subtitle">Твой уровень кибербезопасности и прогресс</p>
+
+    <div class="grid cols-2">
+      <div class="card" style="text-align:center;">
+        <h3>Security Score</h3>
+        <div class="score-ring" id="ring"><div class="inner" id="score">–</div></div>
+        <p class="muted" id="score-hint" style="margin-top:12px;"></p>
+      </div>
+
+      <div class="card">
+        <h3>Моя статистика</h3>
+        <div class="grid cols-3" style="margin-top:10px;">
+          <div class="metric"><div class="value" id="m-quiz">–</div><div class="label">квизов пройдено</div></div>
+          <div class="metric"><div class="value" id="m-avg">–</div><div class="label">средний балл</div></div>
+          <div class="metric"><div class="value" id="m-phish">–</div><div class="label">фишинг пойман</div></div>
+        </div>
+        <h3 style="margin-top:20px;">Мои значки</h3>
+        <div id="badges"><span class="muted">пока нет — зарабатывай!</span></div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:28px;">Быстрые действия</h3>
+    <div class="grid cols-3">
+      <div class="card">
+        <h3>📚 Пройти обучение</h3>
+        <p class="muted">Курсы, видео и материалы по ИБ.</p>
+        <a href="/courses.html" class="btn sm">Открыть</a>
+      </div>
+      <div class="card">
+        <h3>📨 Проверить почту</h3>
+        <p class="muted">Тренажёр: распознай фишинг в инбоксе.</p>
+        <a href="/inbox.html" class="btn sm">Открыть</a>
+      </div>
+      <div class="card">
+        <h3>🤖 Спросить ассистента</h3>
+        <p class="muted">AI-помощник по рабочим ситуациям.</p>
+        <a href="/assistant.html" class="btn sm">Открыть</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script>
+    (async () => {
+      const user = await requireAuth();
+      document.getElementById("uname").textContent = user.name.split(" ")[0];
+
+      const s = await API.myStats();
+      document.getElementById("score").textContent = s.security_score;
+      document.getElementById("ring").style.setProperty("--val", s.security_score);
+      document.getElementById("m-quiz").textContent = s.quiz_attempts;
+      document.getElementById("m-avg").textContent = s.avg_quiz_score + "%";
+      document.getElementById("m-phish").textContent = s.phishing_caught + "/" + s.phishing_seen;
+
+      const hint = s.security_score >= 80 ? "Отличный уровень! 🛡️"
+        : s.security_score >= 50 ? "Неплохо, но есть куда расти."
+        : "В зоне риска — пройди тренировки!";
+      document.getElementById("score-hint").textContent = hint;
+
+      if (s.badges && s.badges.length) {
+        document.getElementById("badges").innerHTML =
+          s.badges.map(b => `<span class="badge">${b.icon} ${b.name}</span>`).join("");
+      }
+    })();
+  </script>
+</body>
+</html>

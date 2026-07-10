@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberBook — вход</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="center-screen">
+    <div class="card auth-card">
+      <div class="brand" style="justify-content:center; margin-bottom:6px;">
+        <span class="logo">CB</span> CyberBook
+      </div>
+      <p class="subtitle" style="text-align:center;">Корпоративный ассистент по кибербезопасности · МТС</p>
+
+      <div class="tabs">
+        <button id="tab-login" class="active" onclick="switchTab('login')">Вход</button>
+        <button id="tab-register" onclick="switchTab('register')">Регистрация</button>
+      </div>
+
+      <!-- Вход -->
+      <form id="form-login" onsubmit="return doLogin(event)">
+        <div class="field">
+          <label>Email</label>
+          <input id="login-email" type="email" value="ivan@mts.ru" required />
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input id="login-password" type="password" value="user123" required />
+        </div>
+        <button class="btn" style="width:100%">Войти</button>
+      </form>
+
+      <!-- Регистрация -->
+      <form id="form-register" class="hidden" onsubmit="return doRegister(event)">
+        <div class="field">
+          <label>Имя</label>
+          <input id="reg-name" type="text" required />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="reg-email" type="email" required />
+        </div>
+        <div class="field">
+          <label>Отдел</label>
+          <input id="reg-dept" type="text" value="Общий" />
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input id="reg-password" type="password" required />
+        </div>
+        <button class="btn" style="width:100%">Создать аккаунт</button>
+      </form>
+
+      <div class="error-msg" id="err"></div>
+      <p class="muted" style="text-align:center; margin-top:14px; font-size:13px;">
+        Демо: admin@mts.ru / admin123 · ivan@mts.ru / user123
+      </p>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script>
+    function switchTab(which) {
+      document.getElementById("tab-login").classList.toggle("active", which === "login");
+      document.getElementById("tab-register").classList.toggle("active", which === "register");
+      document.getElementById("form-login").classList.toggle("hidden", which !== "login");
+      document.getElementById("form-register").classList.toggle("hidden", which !== "register");
+      document.getElementById("err").textContent = "";
+    }
+    function go(user) {
+      window.location.href = user.role === "admin" ? "/admin.html" : "/dashboard.html";
+    }
+    async function doLogin(e) {
+      e.preventDefault();
+      try {
+        const user = await API.login(
+          document.getElementById("login-email").value,
+          document.getElementById("login-password").value
+        );
+        go(user);
+      } catch (err) { document.getElementById("err").textContent = err.message; }
+      return false;
+    }
+    async function doRegister(e) {
+      e.preventDefault();
+      try {
+        const user = await API.register({
+          name: document.getElementById("reg-name").value,
+          email: document.getElementById("reg-email").value,
+          department: document.getElementById("reg-dept").value,
+          password: document.getElementById("reg-password").value,
+        });
+        go(user);
+      } catch (err) { document.getElementById("err").textContent = err.message; }
+      return false;
+    }
+    // если уже залогинен — сразу внутрь
+    API.me().then(go).catch(() => {});
+  </script>
+</body>
+</html>
