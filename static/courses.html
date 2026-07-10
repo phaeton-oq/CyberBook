@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Курсы</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+       <nav class="nav">
+        <a href="dashboard.html" class="nav-link">Главная</a>
+        <a href="courses.html" class="nav-link active">Курсы</a>
+        <a href="quiz.html" class="nav-link">Тесты</a>
+        <a href="chat.html" class="nav-link">AI-Чат</a>
+        <a href="rating.html" class="nav-link">Рейтинг</a>
+        <a href="achievements.html" class="nav-link">Ачивки</a>
+        <a href="admin.html" class="nav-link">Админ</a>
+</nav>
+        <div class="user-icon">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h2>Доступные курсы</h2>
+        <div class="grid-2" id="courses-grid">
+            <div class="box item-card" onclick="openLesson('Основы работы с паролями', 'Никогда не используйте один и тот же пароль на разных сервисах. Надёжный пароль должен состоять минимум из 12 символов, включать заглавные буквы, цифры и спецсимволы. Лучшее решение — использование специализированных менеджеров паролей и включение двухфакторной аутентификации (2FA) везде, где это возможно.')">
+                <h4>Урок 1: Безопасность паролей</h4>
+                <p>Как создавать надёжные пароли и где их правильно хранить.</p>
+            </div>
+            <div class="box item-card" onclick="openLesson('Распознавание фишинга', 'Фишинг — это вид мошенничества, цель которого — получить ваши конфиденциальные данные. Всегда проверяйте точный адрес отправителя письма. Мошенники часто регистрируют домены, похожие на официальные, заменяя одну букву. Не переходите по ссылкам из писем, требующих срочных действий.')">
+                <h4>Урок 2: Что такое Фишинг?</h4>
+                <p>Учимся отличать настоящие письма от уловок хакеров.</p>
+            </div>
+            <div class="box item-card" onclick="openLesson('Социальная инженерия', 'Социальная инженерия — это метод манипуляции людьми с целью получения доступа к закрытым системам. Злоумышленники могут выдавать себя за сотрудников техподдержки, коллег или руководство. Никогда не передавайте одноразовые коды из СМС и пароли третьим лицам, кем бы они ни представились.')">
+                <h4>Урок 3: Социальная инженерия</h4>
+                <p>Как манипулируют людьми и как не попасться на психологические уловки.</p>
+            </div>
+            <div class="box item-card" onclick="openLesson('Безопасность беспроводных сетей', 'Общественные сети Wi-Fi в кафе или аэропортах не зашифрованы. Злоумышленники могут перехватывать ваш трафик, включая личные сообщения и данные банковских карт. При работе вне офиса или дома всегда используйте доверенное VPN-соединение и отключайте автоматическое подключение к открытым сетям.')">
+                <h4>Урок 4: Защита в Wi-Fi сетях</h4>
+                <p>Правила безопасной работы через публичные точки доступа.</p>
+            </div>
+        </div>
+
+        <div id="lesson-view" class="box view-panel" style="display: none;">
+            <h3 id="lesson-title">Название урока</h3>
+            <p id="lesson-text" style="margin: 15px 0; line-height: 1.6; color: var(--dark);"></p>
+            <button class="btn btn-sub" onclick="document.getElementById('lesson-view').style.display='none'">Закрыть урок</button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

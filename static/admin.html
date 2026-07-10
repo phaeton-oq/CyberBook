@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ панель</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-link">Главная</a>
+            <a href="courses.html" class="nav-link">Курсы</a>
+            <a href="quiz.html" class="nav-link">Тесты</a>
+            <a href="chat.html" class="nav-link">AI-Чат</a>
+            <a href="rating.html" class="nav-link">Рейтинг</a>
+            <a href="achievements.html" class="nav-link">Ачивки</a>
+            <a href="admin.html" class="nav-link active">Админ</a>
+</nav>
+        <div class="user-icon">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h2>Панель администратора</h2>
+        <div class="box">
+            <h3>Общий лидерборд сотрудников</h3>
+            <p style="font-size: 13px; color: var(--gray-muted); margin-bottom: 10px;">* Нажмите на имя сотрудника для редактирования</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Сотрудник</th>
+                        <th>Security Score</th>
+                        <th>Статус</th>
+                        <th style="width: 80px;">Действие</th>
+                    </tr>
+                </thead>
+                <tbody id="employees-list">
+                    <tr>
+                        <td><span class="tag-name" onclick="editEmployeeName(this)">Сотрудник1 </span></td>
+                        <td>95 / 100</td>
+                        <td class="ok-status">Безопасен</td>
+                        <td><button class="btn-del" onclick="deleteEmployee(this)">Удалить</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag-name" onclick="editEmployeeName(this)">Сотрудник2</span></td>
+                        <td>88 / 100</td>
+                        <td class="ok-status">Безопасен</td>
+                        <td><button class="btn-del" onclick="deleteEmployee(this)">Удалить</button></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag-name" onclick="editEmployeeName(this)">Сотрудник3</span></td>
+                        <td>75 / 100</td>
+                        <td class="warn-status">В зоне риска</td>
+                        <td><button class="btn-del" onclick="deleteEmployee(this)">Удалить</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="btn-group">
+                <button class="btn btn-main" onclick="addEmployee()">Добавить сотрудника</button>
+                <button class="btn btn-sub" onclick="alert('Фишинг-кампания успешно запущена среди сотрудников в зоне риска!')">Запустить фишинг-кампанию</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

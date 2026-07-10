@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тесты</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-link">Главная</a>
+            <a href="courses.html" class="nav-link">Курсы</a>
+            <a href="quiz.html" class="nav-link active">Тесты</a>
+            <a href="chat.html" class="nav-link">AI-Чат</a>
+            <a href="rating.html" class="nav-link">Рейтинг</a>
+            <a href="achievements.html" class="nav-link">Ачивки</a>
+            <a href="admin.html" class="nav-link">Админ</a>
+</nav>
+        <div class="user-icon">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h2>Тестирование знаний</h2>
+
+        <div class="box">
+            <p class="q-title"><strong>Вопрос 1:</strong> Вам пришло письмо от имени директора с просьбой срочно перевести средства подрядчику. Ваши действия?</p>
+            <div class="q-list">
+                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q1-feedback')">Быстро выполню поручение, авторитет руководства важен.</button>
+                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, true, 'q1-feedback')">Свяжусь с директором по альтернативному проверенному каналу связи.</button>
+                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q1-feedback')">Перешлю коллегам, чтобы узнать их мнение.</button>
+            </div>
+            <div id="q1-feedback" class="alert-panel" style="display: none;">
+                <strong>Разбор ситуации:</strong> Это типичная атака класса CEO Fraud (социальная инженерия). Всегда верифицируйте критические запросы лично или по телефону.
+            </div>
+        </div>
+
+        <div class="box">
+            <p class="q-title"><strong>Вопрос 2:</strong> Какое из следующих подключений к интернету является наиболее опасным для передачи личных данных?</p>
+            <div class="q-list">
+                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q2-feedback')">Домашняя сеть Wi-Fi с паролем WPA3.</button>
+                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, false, 'q2-feedback')">Мобильный интернет 4G/5G вашего оператора.</button>
+                <button class="btn-option opt-btn" onclick="checkQuizAnswer(this, true, 'q2-feedback')">Открытая Wi-Fi сеть в метро или кафе без пароля.</button>
+            </div>
+            <div id="q2-feedback" class="alert-panel" style="display: none;">
+                <strong>Разбор ситуации:</strong> Публичные незащищённые сети позволяют злоумышленникам перехватывать ваш трафик методом Man-in-the-Middle (MitM).
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+       <nav class="nav">
+            <a href="dashboard.html" class="nav-link">Главная</a>
+            <a href="courses.html" class="nav-link">Курсы</a>
+            <a href="quiz.html" class="nav-link">Тесты</a>
+            <a href="chat.html" class="nav-link">AI-Чат</a>
+            <a href="rating.html" class="nav-link">Рейтинг</a>
+            <a href="achievements.html" class="nav-link">Ачивки</a>
+            <a href="admin.html" class="nav-link">Админ</a>
+</nav>
+        <div class="user-icon active">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h2>Личный кабинет</h2>
+        <div class="side-layout">
+            <div class="box avatar-box">
+                <div class="img-wrap"></div>
+                <h3 id="profile-display-name" style="margin-top: 15px; margin-bottom: 5px;">Имя</h3>
+                <p id="profile-display-role" style="color: var(--gray-muted); font-size: 14px; margin-bottom: 20px;">Должность</p>
+                <hr style="border: none; border-top: 1px solid var(--gray-light); width: 100%; margin: 20px 0;">
+                <a href="index.html" class="btn btn-bad" style="width: 100%;">Выйти из аккаунта</a>
+            </div>
+
+            <div class="box">
+                <h3>Настройки профиля</h3>
+                <form onsubmit="event.preventDefault(); saveProfileData();">
+                    <div class="field">
+                        <label for="input-profile-name">Ваше имя в системе</label>
+                        <input type="text" id="input-profile-name" value="Имя" required>
+                    </div>
+                    <div class="field">
+                        <label for="input-profile-role">Ваша роль / должность</label>
+                        <input type="text" id="input-profile-role" value="Должность" required>
+                    </div>
+                    <div class="field">
+                        <label for="input-profile-email">Электронная почта (Логин)</label>
+                        <input type="email" id="input-profile-email" value="example@mts.ru" required>
+                    </div>
+                    <div class="field">
+                        <label for="input-profile-pass">Новый пароль</label>
+                        <input type="password" id="input-profile-pass" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-main" style="margin-top: 10px;">Сохранить изменения</button>
+                </form>
+                <div id="profile-save-status" style="display: none; margin-top: 15px; color: var(--success); font-weight: 600;">
+                    ✓ Изменения успешно сохранены!
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

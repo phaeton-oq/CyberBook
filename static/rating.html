@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Рейтинг сотрудников</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-link">Главная</a>
+            <a href="courses.html" class="nav-link">Курсы</a>
+            <a href="quiz.html" class="nav-link">Тесты</a>
+            <a href="chat.html" class="nav-link">AI-Чат</a>
+            <a href="rating.html" class="nav-link active">Рейтинг</a>
+            <a href="achievements.html" class="nav-link">Ачивки</a>
+            <a href="admin.html" class="nav-link">Админ</a>
+        </nav>
+        <div class="user-icon">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h2>Рейтинг кибербезопасности</h2>
+        <p style="color: var(--gray-muted); margin-bottom: 24px;">Общая таблица успеваемости сотрудников.</p>
+
+        <div class="box">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px; text-align: center;">Место</th>
+                        <th>Сотрудник</th>
+                        <th>Отдел</th>
+                        <th style="text-align: center;">Прогресс</th>
+                        <th style="text-align: right; padding-right: 24px;">Security Score</th>
+                    </tr>
+                </thead>
+                <tbody id="rating-list">
+                    <tr>
+                        <td style="text-align: center; font-weight: 700; color: #000000;"> 1</td>
+                        <td>Сотрудник1</td>
+                        <td>Отдел</td>
+                        <td style="text-align: center;">4 из 4 курсов</td>
+                        <td style="text-align: right; padding-right: 24px;" class="ok-status">95 / 100</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: 700; color: #000000;"> 2</td>
+                        <td>Сотрудник2</td>
+                        <td>Отдел</td>
+                        <td style="text-align: center;">3 из 4 курсов</td>
+                        <td style="text-align: right; padding-right: 24px;" class="ok-status">88 / 100</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: 700; color: #000000;"> 3</td>
+                        <td>Сотрудник3</td>
+                        <td>Отдел</td>
+                        <td style="text-align: center;">3 из 4 курсов</td>
+                        <td style="text-align: right; padding-right: 24px;" class="warn-status">75 / 100</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: 500;">4</td>
+                        <td>Сотрудник4</td>
+                        <td>Отдел</td>
+                        <td style="text-align: center;">2 из 4 курсов</td>
+                        <td style="text-align: right; padding-right: 24px;" class="warn-status">62 / 100</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; font-weight: 500;">5</td>
+                        <td>Сотрудник5</td>
+                        <td>Отдел</td>
+                        <td style="text-align: center;">1 из 4 курсов</td>
+                        <td style="text-align: right; padding-right: 24px; color: var(--primary); font-weight: 600;">40 / 100</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

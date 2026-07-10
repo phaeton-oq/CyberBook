@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Чат</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-link">Главная</a>
+            <a href="courses.html" class="nav-link">Курсы</a>
+            <a href="quiz.html" class="nav-link">Тесты</a>
+            <a href="chat.html" class="nav-link active">AI-Чат</a>
+            <a href="rating.html" class="nav-link">Рейтинг</a>
+            <a href="achievements.html" class="nav-link">Ачивки</a>
+            <a href="admin.html" class="nav-link">Админ</a>
+</nav>
+        <div class="user-icon">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h2>Чат с ИИ-ассистентом</h2>
+        <div class="box chat-box">
+            <div id="chat-area" class="chat-area">
+                <div class="msg in">Привет! Задай мне любой вопрос про кибербезопасность.</div>
+            </div>
+            <form class="chat-form" onsubmit="event.preventDefault(); sendChatMessage();">
+                <input type="text" id="chat-input" placeholder="Введите ваш вопрос..." required>
+                <button type="submit" class="btn btn-main">Отправить</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

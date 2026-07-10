@@ -2,25 +2,29 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Вход</title>
+    <title>Регистрация</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <section class="auth-panel">
         <div class="auth-side left">
-            <h2>Вход в аккаунт</h2>
+            <h2>Регистрация</h2>
             <form action="dashboard.html">
+                <div class="field">
+                    <label>Имя</label>
+                    <input type="text" placeholder="Введите ваше имя" required>
+                </div>
                 <div class="field">
                     <label>Электронная почта</label>
                     <input type="email" placeholder="example@mts.ru" required>
                 </div>
                 <div class="field">
                     <label>Пароль</label>
-                    <input type="password" placeholder="Введите пароль" required>
+                    <input type="password" placeholder="Придумайте пароль" required>
                 </div>
-                <button type="submit" class="btn btn-main">Войти</button>
+                <button type="submit" class="btn btn-main">Зарегистрироваться</button>
             </form>
-            <p class="auth-switch">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+            <p class="auth-switch">Уже есть аккаунт? <a href="index.html">Войти</a></p>
         </div>
         <div class="auth-side right">
             <div class="logo-box">

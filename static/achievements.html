@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои Ачивки</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="dashboard.html" class="nav-link">Главная</a>
+            <a href="courses.html" class="nav-link">Курсы</a>
+            <a href="quiz.html" class="nav-link">Тесты</a>
+            <a href="chat.html" class="nav-link">AI-Чат</a>
+            <a href="rating.html" class="nav-link">Рейтинг</a>
+            <a href="achievements.html" class="nav-link active">Ачивки</a>
+            <a href="admin.html" class="nav-link">Админ</a>
+        </nav>
+        <div class="user-icon">
+            <a href="profile.html" style="color: inherit;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wrapper">
+        <h2>Мои достижения</h2>
+        <p style="color: var(--gray-muted); margin-bottom: 24px;">Выполняйте задания, чтобы открыть все награды.</p>
+
+        <div class="grid-2" id="achievements-grid">
+            <div class="box" style="border-left: 4px solid #0a9396; display: flex; gap: 20px; align-items: center;">
+                <div style="font-size: 40px; background-color: var(--gray-light); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11.815 15.2356H14.815M14.815 15.2356H17.815M14.815 15.2356V12.2356M14.815 15.2356V18.2356M9.235 7.5786C9.98516 8.32877 11.0026 8.75021 12.0635 8.75021C13.1244 8.75021 14.1418 8.32877 14.892 7.5786C15.6422 6.82844 16.0636 5.811 16.0636 4.7501C16.0636 3.68921 15.6422 2.67177 14.892 1.9216C14.5206 1.55016 14.0796 1.25551 13.5943 1.05449C13.109 0.853466 12.5888 0.75 12.0635 0.75C11.0026 0.75 9.98516 1.17144 9.235 1.9216C8.48483 2.67177 8.0634 3.68921 8.0634 4.7501C8.0634 5.811 8.48483 6.82844 9.235 7.5786ZM9.235 7.5786L0.75 16.0636L2.871 18.1856M3.578 13.2356L5.7 15.3566" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+                <div>
+                    <h4 style="margin-bottom: 4px;">Знакомство</h4>
+                    <p style="font-size: 14px; color: var(--gray-muted);">Успешно пройден первый урок по безопасности паролей.</p>
+                    <span style="font-size: 12px; color: #0a9396; font-weight: 600; display: block; margin-top: 4px;">Получено</span>
+                </div>
+            </div>
+
+            <div class="box" style="border-left: 4px solid #0a9396; display: flex; gap: 20px; align-items: center;">
+                <div style="font-size: 40px; background-color: var(--gray-light); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 21H4C3.46957 21 2.96086 20.7893 2.58579 20.4142C2.21071 20.0391 2 19.5304 2 19V5C2 4.46957 2.21071 3.96086 2.58579 3.58579C2.96086 3.21071 3.46957 3 4 3H20C20.5304 3 21.0391 3.21071 21.4142 3.58579C21.7893 3.96086 22 4.46957 22 5V12" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M2 7H22M5 5.01L5.01 4.999M8 5.01L8.01 4.999M11 5.01L11.01 4.999M18.992 14.125L21.548 14.774C21.814 14.842 22.001 15.084 21.993 15.358C21.821 21.116 18.5 22 18.5 22C18.5 22 15.179 21.116 15.007 15.358C15.0043 15.2247 15.0468 15.0944 15.1276 14.9883C15.2084 14.8823 15.3227 14.8067 15.452 14.774L18.008 14.125C18.331 14.043 18.669 14.043 18.992 14.125Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+                <div>
+                    <h4 style="margin-bottom: 4px;">Гений</h4>
+                    <p style="font-size: 14px; color: var(--gray-muted);">Защитили свои данные и сдали теоретический тест без ошибок.</p>
+                    <span style="font-size: 12px; color: #0a9396; font-weight: 600; display: block; margin-top: 4px;">Получено</span>
+                </div>
+            </div>
+
+            <div class="box" style="border-left: 4px solid var(--gray-muted); display: flex; gap: 20px; align-items: center; opacity: 0.6;">
+                <div style="font-size: 40px; filter: grayscale(100%); background-color: var(--gray-light); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M4.875 5.5L6.5 7L10.8333 3" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10.8327 6C10.8324 6.84981 10.5389 7.67745 9.99481 8.36295C9.45069 9.04844 8.68419 9.55616 7.80644 9.81249C6.9287 10.0688 5.98532 10.0605 5.11307 9.78859C4.24083 9.51673 3.48505 8.99551 2.9553 8.30049C2.42555 7.60546 2.14937 6.77276 2.16679 5.92311C2.18421 5.07345 2.49433 4.25099 3.0522 3.57497C3.61006 2.89895 4.38666 2.4045 5.26943 2.1633C6.15219 1.9221 7.09524 1.94669 7.96185 2.2335" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+                <div>
+                    <h4 style="margin-bottom: 4px; color: var(--gray-muted);">Завершение курса</h4>
+                    <p style="font-size: 14px; color: var(--gray-muted);">Завершите абсолютно все доступные курсы в системе.</p>
+                    <span style="font-size: 12px; color: var(--gray-muted); font-weight: 600; display: block; margin-top: 4px;">В процессе</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
