@@ -1,6 +1,3 @@
-/* CyberBook — фронт, подключённый к Flask API (/api/*). Сессия — по cookie. */
-
-// ---------- API-слой ----------
 async function apiFetch(path, { method = "GET", body } = {}) {
     const opts = { method, headers: { "Content-Type": "application/json" }, credentials: "same-origin" };
     if (body !== undefined) opts.body = JSON.stringify(body);
@@ -58,12 +55,10 @@ const API = {
     },
 };
 
-// ---------- утилиты ----------
 function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, c =>
         ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
-// мини-markdown для AI-ответов (**жирный**, списки, переносы)
 function md(text) {
     const lines = esc(text).split(/\r?\n/);
     let html = "", inList = false;
@@ -88,7 +83,6 @@ async function ensureAuth() {
     catch (e) { window.location.href = "index.html"; throw e; }
 }
 
-// ---------- авторизация ----------
 async function doLogin() {
     const err = document.getElementById("auth-error");
     try {
@@ -116,20 +110,18 @@ async function doLogout() {
     window.location.href = "index.html";
 }
 
-// ---------- дашборд ----------
 async function initDashboard() {
     await ensureAuth();
     const [stats, courses, quizzes] = await Promise.all([API.myStats(), API.courses(), API.quizzes()]);
     document.getElementById("score-value").textContent = `${stats.security_score}/100`;
     document.getElementById("score-hint").textContent =
         stats.security_score >= 80 ? "Отличный уровень!" :
-        stats.security_score >= 50 ? "Хороший результат!" : "В зоне риска — тренируйтесь!";
+        stats.security_score >= 50 ? "Хороший результат!" : "В зоне риска, тренируйтесь!";
     document.getElementById("stat-courses").textContent = `${stats.courses_completed} из ${courses.length}`;
     document.getElementById("stat-quizzes").textContent = `${stats.quiz_attempts} из ${quizzes.length}`;
     document.getElementById("stat-phishing").textContent = `${stats.phishing_caught} из ${stats.phishing_seen}`;
 }
 
-// ---------- курсы ----------
 async function initCourses() {
     await ensureAuth();
     const courses = await API.courses();
@@ -168,7 +160,6 @@ async function finishCourse(id) {
     } catch (e) { alert(e.message); }
 }
 
-// ---------- квизы ----------
 let currentQuiz = null;
 async function initQuiz() {
     await ensureAuth();
@@ -238,7 +229,6 @@ async function submitCurrentQuiz() {
     document.getElementById("quiz-result").scrollIntoView({ behavior: "smooth" });
 }
 
-// ---------- AI-чат ----------
 const chatHistory = [];
 async function sendChatMessage() {
     const input = document.getElementById("chat-input");
@@ -266,7 +256,6 @@ async function sendChatMessage() {
     area.scrollTop = area.scrollHeight;
 }
 
-// ---------- сканер угроз ----------
 const SCAN_VERDICT = {
     clean: { label: "Безопасно", color: "#1aa64b" },
     suspicious: { label: "Подозрительно", color: "#f59e0b" },
@@ -409,7 +398,6 @@ async function runFileScan() {
     }
 }
 
-// ---------- инбокс (фишинг) ----------
 async function initInbox() {
     await ensureAuth();
     const emails = await API.inbox();
@@ -417,7 +405,7 @@ async function initInbox() {
         const controls = e.answered
             ? `<div class="alert-panel" style="border-color:${e.was_correct ? "#1aa64b" : "#e30613"};">
                    <strong style="color:${e.was_correct ? "#1aa64b" : "#e30613"};">
-                   ${e.was_correct ? "✅ Вы ответили верно" : "❌ Вы ошиблись"}</strong> — письмо уже разобрано.
+                   ${e.was_correct ? "✅ Вы ответили верно" : "❌ Вы ошиблись"}</strong>, письмо уже разобрано.
                </div>`
             : `<div class="btn-group">
                    <button class="btn btn-bad" onclick="answerMail(${e.id}, 'trusted')">Доверять письму</button>
@@ -452,7 +440,6 @@ async function answerMail(id, action) {
     } catch (e) { if (fb) { fb.style.display = "block"; fb.textContent = e.message; } }
 }
 
-// ---------- рейтинг ----------
 async function initRating() {
     await ensureAuth();
     const rows = await API.leaderboard();
@@ -462,19 +449,18 @@ async function initRating() {
             <td style="text-align:center;font-weight:700;">${medal[r.rank] || r.rank}</td>
             <td>${esc(r.name)}</td>
             <td>${esc(r.department)}</td>
-            <td style="text-align:center;">${(r.badges || []).map(b => b.icon).join(" ") || "—"}</td>
+            <td style="text-align:center;">${(r.badges || []).map(b => b.icon).join(" ") || "-"}</td>
             <td style="text-align:right;padding-right:24px;" class="${r.security_score >= 75 ? "ok-status" : "warn-status"}">${r.security_score} / 100</td>
         </tr>`).join("") || `<tr><td colspan="5">Нет данных</td></tr>`;
 }
 
-// ---------- ачивки ----------
 async function initAchievements() {
     await ensureAuth();
     const stats = await API.myStats();
     const grid = document.getElementById("achievements-grid");
     const badges = stats.badges || [];
     if (!badges.length) {
-        grid.innerHTML = `<div class="box"><p style="color:var(--gray-muted);">Пока нет значков — проходите курсы, тесты и ловите фишинг!</p></div>`;
+        grid.innerHTML = `<div class="box"><p style="color:var(--gray-muted);">Пока нет значков. Проходите курсы, тесты и ловите фишинг!</p></div>`;
         return;
     }
     grid.innerHTML = badges.map(b => `
@@ -487,7 +473,6 @@ async function initAchievements() {
         </div>`).join("");
 }
 
-// ---------- админ ----------
 async function initAdmin() {
     const user = await ensureAuth();
     if (user.role !== "admin") { window.location.href = "dashboard.html"; return; }
@@ -500,7 +485,7 @@ async function initAdmin() {
                 <td class="${u.security_score >= 50 ? "ok-status" : "warn-status"}">${u.security_score >= 50 ? "Безопасен" : "В зоне риска"}</td>
                 <td><button class="btn-del" data-user-id="${u.id}" onclick="deleteEmployee(this)">Удалить</button></td>
             </tr>`).join("");
-    } catch (e) { /* не админ или ошибка */ }
+    } catch (e) {}
 }
 async function runPhishingCampaign() {
     try {
@@ -509,7 +494,6 @@ async function runPhishingCampaign() {
     } catch (e) { alert(e.message); }
 }
 
-// ---------- профиль ----------
 async function initProfile() {
     const user = await ensureAuth();
     document.getElementById("profile-display-name").textContent = user.name;
@@ -547,7 +531,6 @@ async function saveProfileData() {
     }
 }
 
-// добавление/удаление сотрудников — через реальный API (только админ)
 async function addEmployee() {
     const name = prompt("Имя нового сотрудника:");
     if (!name || !name.trim()) return;
@@ -570,10 +553,8 @@ async function deleteEmployee(btn) {
     } catch (e) { alert(e.message); }
 }
 
-// ---------- роутер: инициализация по элементам страницы ----------
 document.addEventListener("DOMContentLoaded", () => {
     const has = (id) => document.getElementById(id);
-    // авто-переход с логина, если уже авторизован
     if (has("login-form") || has("register-form")) {
         API.me().then(u => { window.location.href = u.role === "admin" ? "admin.html" : "dashboard.html"; }).catch(() => {});
         return;

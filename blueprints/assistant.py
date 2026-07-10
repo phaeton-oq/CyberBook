@@ -1,4 +1,3 @@
-"""AI-ассистент с контекстом по сотруднику."""
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
@@ -18,7 +17,7 @@ def build_user_context(user):
         avg = round(sum(a.score for a in attempts) / len(attempts))
         lines.append(f"Средний балл по квизам: {avg}%.")
         if avg < 70:
-            lines.append("Слабые квизы — объясняй подробнее.")
+            lines.append("Слабые квизы, объясняй подробнее.")
 
     failed = PhishingResult.query.filter_by(user_id=user.id, correct=False).limit(3).all()
     if failed:

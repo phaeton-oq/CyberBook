@@ -1,4 +1,3 @@
-"""Курсы и уроки."""
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request

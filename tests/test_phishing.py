@@ -1,6 +1,3 @@
-"""Тесты фишинг-тренажёра: инбокс, ответы, отсутствие двойного начисления."""
-
-
 def _inbox(client):
     return client.get("/api/phishing/inbox").get_json()
 
@@ -15,7 +12,6 @@ def test_inbox_hides_verdict(emp_client):
 
 def test_report_phishing_correct(emp_client):
     inbox = _inbox(emp_client)
-    # фишинговое письмо — с доменом mts-verify.ru
     phish = next(e for e in inbox if "verify" in e["sender"])
     r = emp_client.post("/api/phishing/answer",
                         json={"email_id": phish["id"], "action": "reported"})
@@ -44,7 +40,6 @@ def test_no_double_scoring(emp_client):
     score_after_first = first["security_score"]
     second = emp_client.post("/api/phishing/answer",
                             json={"email_id": phish["id"], "action": "reported"}).get_json()
-    # повторный ответ не должен менять счёт
     assert second["security_score"] == score_after_first
 
 

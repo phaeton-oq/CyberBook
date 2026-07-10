@@ -1,4 +1,3 @@
-"""Админ: управление сотрудниками (создание, удаление). Только для роли admin."""
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 
@@ -15,7 +14,6 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
 @admin_bp.post("/users")
 @admin_required
 def create_user():
-    """Создать сотрудника."""
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
     email = (data.get("email") or "").strip().lower()
@@ -41,14 +39,12 @@ def create_user():
 @admin_bp.delete("/users/<int:user_id>")
 @admin_required
 def delete_user(user_id):
-    """Удалить сотрудника вместе со связанными записями."""
     user = User.query.get_or_404(user_id)
     if user.id == current_user.id:
         return jsonify(error="Нельзя удалить самого себя"), 400
     if user.role == "admin":
         return jsonify(error="Нельзя удалить администратора"), 400
 
-    # чистим зависимые записи, чтобы не оставлять «сирот»
     for model in (QuizAttempt, PhishingResult, Badge, CourseProgress, LessonProgress, ThreatScan):
         model.query.filter_by(user_id=user.id).delete()
     db.session.delete(user)

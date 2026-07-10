@@ -1,4 +1,3 @@
-"""Декоратор доступа только для администратора."""
 from functools import wraps
 
 from flask import jsonify

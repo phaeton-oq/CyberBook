@@ -1,4 +1,3 @@
-"""Тесты сканера угроз в офлайн-режиме (без VirusTotal-ключа)."""
 import virustotal as vt
 
 

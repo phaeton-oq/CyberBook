@@ -1,6 +1,3 @@
-"""Тесты статистики и разграничения доступа admin/employee."""
-
-
 def test_my_stats(emp_client):
     r = emp_client.get("/api/stats/me")
     assert r.status_code == 200

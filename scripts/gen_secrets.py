@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Генерирует SECRET_KEY на каждый билд. Остальные ключи в .env не трогает."""
 import os
 import secrets
 from datetime import datetime, timezone

@@ -1,4 +1,3 @@
-"""Юнит-тесты логики Security Score, очков и бейджей."""
 import scoring
 
 

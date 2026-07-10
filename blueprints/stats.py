@@ -1,4 +1,3 @@
-"""Статистика, лидерборд, экспорт отчётов."""
 import csv
 import io
 from datetime import datetime, timedelta
@@ -257,7 +256,6 @@ def export_pdf(user_id):
     except ImportError:
         return jsonify(error="Установите fpdf2"), 503
 
-    # Unicode-шрифт с кириллицей (Helvetica её не поддерживает).
     font_path = Path(__file__).resolve().parent.parent / "assets" / "fonts" / "DejaVuSans.ttf"
     p = report["phishing"]
 
@@ -266,7 +264,7 @@ def export_pdf(user_id):
     if font_path.exists():
         pdf.add_font("DejaVu", "", str(font_path))
         pdf.set_font("DejaVu", size=16)
-        pdf.cell(0, 12, "CyberBook — отчёт по сотруднику", ln=True)
+        pdf.cell(0, 12, "CyberBook: отчёт по сотруднику", ln=True)
         pdf.set_font("DejaVu", size=12)
         pdf.cell(0, 8, f"Сотрудник: {user.name} ({user.department})", ln=True)
         pdf.cell(0, 8, f"Email: {user.email}", ln=True)
@@ -275,7 +273,6 @@ def export_pdf(user_id):
         pdf.cell(0, 8, f"Квизы: средний балл {report['quiz']['avg_score']}%", ln=True)
         pdf.cell(0, 8, f"Фишинг: {p['seen']} просмотров, {p['clicked']} кликов", ln=True)
     else:
-        # фолбэк без шрифта — транслит, чтобы не падать
         pdf.set_font("Helvetica", size=12)
         pdf.cell(0, 8, f"CyberBook report (user #{user.id})", ln=True)
         pdf.cell(0, 8, f"Score {report['security_score']}, ochki {report['points']}", ln=True)

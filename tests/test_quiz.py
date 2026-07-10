@@ -1,6 +1,3 @@
-"""Тесты квизов: выдача без ответов, оценка, очки."""
-
-
 def _quiz_id(client):
     return client.get("/api/quiz").get_json()[0]["id"]
 

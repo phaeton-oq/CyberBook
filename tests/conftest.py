@@ -1,10 +1,3 @@
-"""
-Общая инфраструктура тестов.
-
-Поднимаем приложение на временной SQLite-базе, AI (Cerebras) и VirusTotal
-намеренно НЕ сконфигурированы — код уходит в детерминированные fallback'и,
-так что тесты не ходят в сеть и не зависят от ключей.
-"""
 import os
 import tempfile
 
@@ -15,13 +8,12 @@ from config import Config
 
 class TestConfig(Config):
     TESTING = True
-    CEREBRAS_API_KEY = ""      # -> ai._get_client() вернёт None -> fallback
-    VIRUSTOTAL_API_KEY = ""    # -> vt.is_configured() == False
+    CEREBRAS_API_KEY = ""
+    VIRUSTOTAL_API_KEY = ""
     SECRET_KEY = "test-secret"
 
 
 def _seed(db):
-    """Минимальный детерминированный набор данных (без random)."""
     from models import Course, PhishingEmail, Question, Quiz, User
 
     admin = User(name="Тест Админ", email="admin@test.ru", role="admin",

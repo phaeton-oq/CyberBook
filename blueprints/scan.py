@@ -1,4 +1,3 @@
-"""Сканер угроз: VirusTotal, эвристика, AI-разбор."""
 import hashlib
 import re
 

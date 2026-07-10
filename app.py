@@ -12,7 +12,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     if config_class.using_dev_secret() and not app.debug:
-        warnings.warn("SECRET_KEY не задан — запустите scripts/gen_secrets.py", stacklevel=1)
+        warnings.warn("SECRET_KEY не задан, запустите scripts/gen_secrets.py", stacklevel=1)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -45,14 +45,11 @@ def create_app(config_class=Config):
 
     @app.get("/<path:page>")
     def pages(page):
-        # 1) прямая отдача существующего файла (style.css, script.js, картинки)
         if os.path.isfile(os.path.join(app.static_folder, page)):
             return send_from_directory(app.static_folder, page)
-        # 2) страница по имени: /dashboard -> dashboard.html
         target = page if page.endswith(".html") else f"{page}.html"
         if os.path.isfile(os.path.join(app.static_folder, target)):
             return send_from_directory(app.static_folder, target)
-        # 3) fallback — на вход
         return send_from_directory(app.static_folder, "index.html")
 
     @app.get("/api/health")

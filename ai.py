@@ -1,4 +1,3 @@
-"""Обёртка над Cerebras API (OpenAI-compatible). При недоступности — статические заглушки."""
 import json
 import re
 
@@ -203,7 +202,6 @@ def explain_mistake(context):
 
 
 def _threat_review_fallback(vt_report, flags):
-    """Разбор угрозы без AI — по данным VT и эвристике."""
     vt_verdict = (vt_report or {}).get("verdict", "unknown")
     merged = list(flags)
     if vt_report and vt_report.get("threat_names"):

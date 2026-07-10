@@ -1,4 +1,3 @@
-"""Авторизация: регистрация, вход, сессия, роли employee/admin."""
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -64,7 +63,6 @@ def me():
 @auth_bp.patch("/me")
 @login_required
 def update_me():
-    """Обновление своего профиля: имя, отдел, email, пароль (любое подмножество)."""
     data = request.get_json(silent=True) or {}
 
     if "name" in data:

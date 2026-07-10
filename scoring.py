@@ -1,4 +1,3 @@
-"""Рейтинг безопасности, очки и бейджи."""
 from extensions import db
 from models import Badge, Course, CourseProgress, PhishingResult, QuizAttempt
 
