@@ -39,6 +39,9 @@ server.log
 cookies.txt
 *.txt.tmp
 
+# внутренняя документация команды (не для репозитория)
+CODE_REVIEW.md
+
 # OS / IDE
 .DS_Store
 Thumbs.db

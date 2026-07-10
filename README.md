@@ -30,4 +30,4 @@ python app.py
 - Сканер ссылок/файлов (VirusTotal + AI)
 - Статистика, Security Score, бейджи, экспорт отчётов
 
-См. [API.md](API.md): контракт эндпоинтов, [CODE_REVIEW.md](CODE_REVIEW.md): ревью блоков и ответы на вопросы, [TASKS.md](TASKS.md): распределение задач.
+См. [API.md](API.md): контракт эндпоинтов, [TASKS.md](TASKS.md): распределение задач.
