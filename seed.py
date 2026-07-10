@@ -12,8 +12,8 @@ import random
 from app import create_app
 from extensions import db
 from models import (
-    User, Course, Quiz, Question, PhishingEmail,
-    PhishingResult, QuizAttempt,
+    User, Course, Lesson, Quiz, Question, PhishingEmail,
+    PhishingResult, QuizAttempt, CourseProgress,
 )
 
 app = create_app()
@@ -104,6 +104,25 @@ def run():
             db.session.add(c)
             courses.append(c)
         db.session.flush()
+
+        # ---------------- Уроки ----------------
+        lessons_data = [
+            (courses[0], [
+                {"title": "Почему ИБ важна", "order": 1, "content": "80% атак — через человека.", "video_url": ""},
+                {"title": "Гигиена рабочего места", "order": 2, "content": "Win+L, USB, экран.", "video_url": ""},
+            ]),
+            (courses[1], [
+                {"title": "Признаки фишинга", "order": 1, "content": "Срочность, чужой домен, ссылки.", "video_url": ""},
+                {"title": "Что делать при подозрении", "order": 2, "content": "Не кликать, сообщить в СБ.", "video_url": ""},
+            ]),
+            (courses[2], [
+                {"title": "Надёжные пароли", "order": 1, "content": "Длина и уникальность.", "video_url": ""},
+                {"title": "2FA", "order": 2, "content": "Второй фактор спасает от утечек.", "video_url": ""},
+            ]),
+        ]
+        for course, lessons in lessons_data:
+            for ld in lessons:
+                db.session.add(Lesson(course_id=course.id, **ld))
 
         # ---------------- Квизы ----------------
         quiz = Quiz(title="Квиз: Распознай фишинг", course_id=courses[1].id)
@@ -227,6 +246,13 @@ def run():
                 score=random.randint(40, 100), total=3,
                 correct=random.randint(1, 3),
             ))
+            u.points = random.randint(50, 300)
+            if random.random() > 0.5:
+                db.session.add(CourseProgress(
+                    user_id=u.id,
+                    course_id=random.choice(courses).id,
+                    completed=True,
+                ))
         db.session.commit()
 
         print("[OK] База наполнена.")

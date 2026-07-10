@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .env
+.build-id
 *.db
 *.sqlite3
 instance/
@@ -10,3 +11,4 @@ venv/
 server.log
 cookies.txt
 *.txt.tmp
+.github-token

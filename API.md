@@ -22,46 +22,92 @@ Base URL при разработке: `http://localhost:5000`
 | POST | `/api/auth/logout` | — | `{ok:true}` |
 | GET  | `/api/auth/me` | — | user / 401 |
 
-`user = {id, name, email, role, department, security_score, badges:[{name,icon}]}`
+`user = {id, name, email, role, department, security_score, points, badges:[{name,icon}]}`
 
-## Курсы  *(владелец: 2-й бэкенд)*
-| метод | путь | ответ |
-|-------|------|-------|
-| GET | `/api/courses` | `[{id,title,description,video_url,topic,order}]` |
-| GET | `/api/courses/<id>` | курс + `content`, `quizzes:[{id,title}]` |
-| POST | `/api/courses` (admin) | `{title, description?, content?, video_url?, topic?}` |
+## Курсы и уроки  *(владелец: 2-й бэкенд)*
+| метод | путь | тело | ответ |
+|-------|------|------|-------|
+| GET | `/api/courses` | — | `[{id,title,...,completed}]` |
+| GET | `/api/courses/<id>` | — | курс + `content`, `lessons[]`, `quizzes[]`, `completed` |
+| POST | `/api/courses` (admin) | `{title, description?, content?, video_url?, topic?, order?}` | курс |
+| PUT | `/api/courses/<id>` (admin) | поля курса | курс |
+| DELETE | `/api/courses/<id>` (admin) | — | `{ok:true}` |
+| POST | `/api/courses/<id>/complete` | — | `{completed, security_score, points, new_badges[]}` |
+| GET | `/api/courses/progress/me` | — | `{courses[], lessons[]}` |
+| GET | `/api/courses/<id>/lessons` | — | `[{id,title,content,video_url,order,completed}]` |
+| POST | `/api/courses/<id>/lessons` (admin) | `{title, content?, video_url?, order?}` | урок |
+| GET | `/api/courses/lessons/<id>` | — | урок + `completed` |
+| PUT | `/api/courses/lessons/<id>` (admin) | поля урока | урок |
+| DELETE | `/api/courses/lessons/<id>` (admin) | — | `{ok:true}` |
+| POST | `/api/courses/lessons/<id>/complete` | — | `{completed, security_score, points, new_badges[]}` |
 
 ## Квизы  *(владелец: 2-й бэкенд)*
 | метод | путь | тело | ответ |
 |-------|------|------|-------|
-| GET | `/api/quiz/<id>` | — | квиз БЕЗ правильных ответов: `{id,title,questions:[{id,text,options[]}]}` |
-| POST | `/api/quiz/<id>/submit` | `{answers:[idx,...]}` | `{score,correct,total,review:[{question_id,chosen,correct_index,is_correct,explanation}],security_score,new_badges[]}` |
-| POST | `/api/quiz/generate` | `{topic,n?,difficulty?,course_id?}` | `{quiz, ai:bool}` — генерит через Cerebras |
+| GET | `/api/quiz` | — | список квизов |
+| GET | `/api/quiz/history` | — | история попыток текущего пользователя |
+| GET | `/api/quiz/<id>` | — | квиз БЕЗ правильных ответов |
+| POST | `/api/quiz/<id>/submit` | `{answers:[idx,...]}` | `{score,correct,total,review[],security_score,points,new_badges[]}` |
+| POST | `/api/quiz/generate` | `{topic,n?,difficulty?,course_id?}` | `{quiz, ai:bool}` |
+| POST | `/api/quiz/personalized` | `{n?}` | `{quiz, ai, weak_topics[], selected_topic}` |
+| POST | `/api/quiz` (admin) | `{title, course_id?, questions:[{text,options,correct_index,explanation?}]}` | квиз с ответами |
+| PUT | `/api/quiz/<id>` (admin) | `{title?, course_id?, questions?}` | квиз |
+| DELETE | `/api/quiz/<id>` (admin) | — | `{ok:true}` |
 
 ## Фишинг-тренажёр  *(владелец: ядро/я)*
 | метод | путь | тело | ответ |
 |-------|------|------|-------|
 | GET | `/api/phishing/inbox` | — | `[{id,sender,sender_name,subject,body,difficulty,answered,was_correct}]` |
 | GET | `/api/phishing/email/<id>` | — | письмо (раскрывает red_flags, если уже отвечал) |
-| POST | `/api/phishing/answer` | `{email_id, action:"reported"\|"clicked"\|"trusted"}` | `{correct,is_phishing,red_flags[],explanation,security_score,new_badges[]}` |
+| POST | `/api/phishing/answer` | `{email_id, action:"reported"\|"clicked"\|"trusted"}` | `{correct,is_phishing,red_flags[],explanation,security_score,points,new_badges[]}` |
 | POST | `/api/phishing/generate` (admin) | `{difficulty?,theme?}` | `{email, ai:bool}` |
 
 **Правило:** фишинг → правильно `reported`; легитимное письмо → правильно `trusted`.
-`explanation` приходит от AI, только если сотрудник ошибся.
 
 ## AI-ассистент  *(владелец: ядро/я)*
 | метод | путь | тело | ответ |
 |-------|------|------|-------|
 | POST | `/api/assistant/chat` | `{message, history?:[{role,content}]}` | `{reply, ai:bool}` |
 
-`ai:false` = сработал fallback (нет ключа/Cerebras недоступен) — демо не падает.
+## Сканер угроз — VirusTotal + AI  *(новый модуль)*
+| метод | путь | тело | ответ |
+|-------|------|------|-------|
+| GET | `/api/scan/status` | — | `{virustotal_configured, max_file_mb}` |
+| GET | `/api/scan/history` | — | история проверок пользователя |
+| POST | `/api/scan/url` | `{url}` | VT + AI: `{verdict, vt:{stats,threat_names}, ai_review, red_flags, recommendations, ai, points}` |
+| POST | `/api/scan/file` | multipart `file` **или** `{sha256, filename?}` | проверка файла по загрузке или хешу |
+| POST | `/api/scan/review` | `{text}` | разбор письма/СМС: извлекает URL → VT + AI |
 
-## Статистика  *(владелец: 2-й бэкенд)*
+**Вердикты:** `clean` | `suspicious` | `malicious` | `unknown`
+
+Без `VIRUSTOTAL_API_KEY` работает AI + эвристика (домен, IP, подозрительные слова в URL).
+
+Ключ VirusTotal: https://www.virustotal.com/gui/my-apikey → в `.env` как `VIRUSTOTAL_API_KEY`.
+
+## Статистика и геймификация  *(владелец: 2-й бэкенд)*
 | метод | путь | ответ |
 |-------|------|-------|
-| GET | `/api/stats/me` | `{security_score,quiz_attempts,avg_quiz_score,phishing_seen,phishing_caught,badges[]}` |
-| GET | `/api/stats/leaderboard` | `[{rank,name,department,security_score,badges[]}]` |
-| GET | `/api/stats/overview` (admin) | сводка компании: `{total_users,avg_security_score,phishing:{...},quiz:{...},departments[],at_risk[]}` |
+| GET | `/api/stats/me` | личная статистика + `formula` (разбор Security Score) |
+| GET | `/api/stats/leaderboard` | `[{rank,user_id,name,department,security_score,points,badges[],formula_score}]` |
+| GET | `/api/stats/overview` (admin) | сводка: пользователи, фишинг (% кликов), квизы, курсы |
+| GET | `/api/stats/timeline` (admin) | динамика за 30 дней: quiz, phishing, course_completions |
+| GET | `/api/stats/users` (admin) | таблица сотрудников: кто прошёл, средний балл, % кликов |
+| GET | `/api/stats/export/<user_id>` (admin) | CSV-отчёт по сотруднику |
+| GET | `/api/stats/export/<user_id>/pdf` (admin) | PDF-отчёт (нужен fpdf2) |
+
+### Формула Security Score
+```
+score = clamp(50
+  + (avg_quiz - 50) * 0.35
+  + (catch_rate - 50) * 0.35
+  + course_completion% * 0.20
+  - click_rate% * 0.15)
+```
+Поле `formula` в `/api/stats/me` показывает разбор по компонентам.
+
+### Очки и бейджи
+- Очки (`points`): квиз +10/правильный, фишинг +15, урок +20, курс +50
+- Бейджи: Кибер-Страж (80+), Неприступный (95+), Отличник ИБ (100% квиз), Ученик ИБ, Мастер обучения, Знаток квизов, Охотник за очками
 
 ---
 

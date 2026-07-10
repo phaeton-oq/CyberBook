@@ -1,4 +1,4 @@
-"""Auth: регистрация, вход, выход, текущий пользователь. Flask-Login, роли employee/admin."""
+"""Авторизация: регистрация, вход, сессия, роли employee/admin."""
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 

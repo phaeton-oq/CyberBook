@@ -1,4 +1,4 @@
-"""Shared Flask extensions — imported everywhere to avoid circular imports."""
+"""Общие расширения Flask (db, login_manager)."""
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 

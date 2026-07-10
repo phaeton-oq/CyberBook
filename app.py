@@ -1,14 +1,6 @@
-"""
-CyberBook — точка входа.
-Один Flask-сервер: /api/* (JSON) + раздача статики фронта из static/.
-
-Запуск:
-    pip install -r requirements.txt
-    cp .env.example .env   # и вписать CEREBRAS_API_KEY
-    python seed.py          # наполнить демо-данными
-    python app.py           # http://localhost:5000
-"""
 import os
+import warnings
+
 from flask import Flask, send_from_directory, jsonify
 
 from config import Config
@@ -19,6 +11,9 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_folder="static", static_url_path="/static")
     app.config.from_object(config_class)
 
+    if config_class.using_dev_secret() and not app.debug:
+        warnings.warn("SECRET_KEY не задан — запустите scripts/gen_secrets.py", stacklevel=1)
+
     db.init_app(app)
     login_manager.init_app(app)
 
@@ -28,30 +23,27 @@ def create_app(config_class=Config):
     def load_user(user_id):
         return db.session.get(User, int(user_id))
 
-    # API отвечает JSON-ом на 401, а не редиректом на страницу логина
     @login_manager.unauthorized_handler
     def unauthorized():
         return jsonify(error="Требуется авторизация"), 401
 
-    # blueprints
     from blueprints.auth import auth_bp
     from blueprints.courses import courses_bp
     from blueprints.quiz import quiz_bp
     from blueprints.phishing import phishing_bp
     from blueprints.assistant import assistant_bp
     from blueprints.stats import stats_bp
+    from blueprints.scan import scan_bp
 
-    for bp in (auth_bp, courses_bp, quiz_bp, phishing_bp, assistant_bp, stats_bp):
+    for bp in (auth_bp, courses_bp, quiz_bp, phishing_bp, assistant_bp, stats_bp, scan_bp):
         app.register_blueprint(bp)
 
-    # ---- раздача фронта (static/*.html) ----
     @app.get("/")
     def index():
         return send_from_directory(app.static_folder, "index.html")
 
     @app.get("/<path:page>")
     def pages(page):
-        """Отдаёт любую страницу из static/ (index.html, dashboard.html и т.д.)."""
         target = page if page.endswith(".html") else f"{page}.html"
         full = os.path.join(app.static_folder, target)
         if os.path.isfile(full):

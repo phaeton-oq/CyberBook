@@ -7,21 +7,27 @@
 **Стек:** Python Flask + SQLite + vanilla JS. AI — Cerebras (OpenAI-совместимый API).
 
 ## Быстрый старт
+```powershell
+.\build.ps1 -Seed          # секреты + deps + демо-данные
+python app.py              # http://localhost:5000
+```
+
+Или вручную:
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+python scripts/gen_secrets.py
 pip install -r requirements.txt
-copy .env.example .env      # вписать CEREBRAS_API_KEY
-python seed.py              # демо-данные
-python app.py               # http://localhost:5000
+copy .env.example .env      # CEREBRAS_API_KEY, VIRUSTOTAL_API_KEY
+python seed.py
+python app.py
 ```
 Демо: `admin@mts.ru / admin123` · `ivan@mts.ru / user123`
 
 ## Фичи
-- 📚 Обучение: курсы, видео, материалы
-- 🧠 Квизы с разбором (можно генерировать через AI)
-- 📨 Симулятор фишинга: инбокс, распознавание, red flags
-- 🤖 AI-ассистент «Спроси Кибер-Ассистента»
-- 📊 Статистика, Security Score, бейджи, лидерборд отделов
+- Курсы, уроки, видео, прогресс
+- Квизы с разбором и персонализацией
+- Симулятор фишинга
+- AI-ассистент
+- Сканер ссылок/файлов (VirusTotal + AI)
+- Статистика, Security Score, бейджи, экспорт отчётов
 
 См. [API.md](API.md) — контракт эндпоинтов, [TASKS.md](TASKS.md) — распределение задач.
