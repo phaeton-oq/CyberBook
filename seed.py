@@ -408,7 +408,11 @@ def run():
         db.session.commit()
 
         # ---------------- История для статистики ----------------
-        employees = User.query.filter_by(role="employee").all()
+        # Демо-аккаунт ivan оставляем ЧИСТЫМ: свежий инбокс и тесты, чтобы
+        # на защите наглядно показать рост Security Score с нуля.
+        employees = User.query.filter(
+            User.role == "employee", User.email != "ivan@mts.ru",
+        ).all()
         all_emails = PhishingEmail.query.all()
         all_courses = Course.query.all()
         for u in employees:

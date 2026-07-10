@@ -251,19 +251,27 @@ async function sendChatMessage() {
 async function initInbox() {
     await ensureAuth();
     const emails = await API.inbox();
-    document.getElementById("inbox-list").innerHTML = emails.map(e => `
+    document.getElementById("inbox-list").innerHTML = emails.map(e => {
+        const controls = e.answered
+            ? `<div class="alert-panel" style="border-color:${e.was_correct ? "#1aa64b" : "#e30613"};">
+                   <strong style="color:${e.was_correct ? "#1aa64b" : "#e30613"};">
+                   ${e.was_correct ? "✅ Вы ответили верно" : "❌ Вы ошиблись"}</strong> — письмо уже разобрано.
+               </div>`
+            : `<div class="btn-group">
+                   <button class="btn btn-bad" onclick="answerMail(${e.id}, 'trusted')">Доверять письму</button>
+                   <button class="btn btn-ok" onclick="answerMail(${e.id}, 'reported')">Пожаловаться на фишинг</button>
+               </div>
+               <div class="alert-panel" id="mail-fb-${e.id}" style="display:none;"></div>`;
+        return `
         <div class="box mail-box" data-email="${e.id}">
             <div class="mail-top">
-                <strong>От:</strong> ${esc(e.sender_name || "")} &lt;${esc(e.sender)}&gt; ${e.answered ? (e.was_correct ? "✅" : "❌") : ""}<br>
+                <strong>От:</strong> ${esc(e.sender_name || "")} &lt;${esc(e.sender)}&gt;<br>
                 <strong>Тема:</strong> ${esc(e.subject)}
             </div>
             <div class="mail-text">${esc(e.body).replace(/\n/g, "<br>")}</div>
-            <div class="btn-group">
-                <button class="btn btn-bad" onclick="answerMail(${e.id}, 'trusted')" ${e.answered ? "disabled" : ""}>Доверять письму</button>
-                <button class="btn btn-ok" onclick="answerMail(${e.id}, 'reported')" ${e.answered ? "disabled" : ""}>Пожаловаться на фишинг</button>
-            </div>
-            <div class="alert-panel" id="mail-fb-${e.id}" style="display:none;"></div>
-        </div>`).join("");
+            ${controls}
+        </div>`;
+    }).join("");
 }
 async function answerMail(id, action) {
     const fb = document.getElementById(`mail-fb-${id}`);
