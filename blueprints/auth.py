@@ -59,3 +59,36 @@ def me():
     if not current_user.is_authenticated:
         return jsonify(error="Не авторизован"), 401
     return jsonify(current_user.to_dict())
+
+
+@auth_bp.patch("/me")
+@login_required
+def update_me():
+    """Обновление своего профиля: имя, отдел, email, пароль (любое подмножество)."""
+    data = request.get_json(silent=True) or {}
+
+    if "name" in data:
+        name = (data.get("name") or "").strip()
+        if not name:
+            return jsonify(error="Имя не может быть пустым"), 400
+        current_user.name = name
+
+    if "department" in data:
+        current_user.department = (data.get("department") or "Общий").strip()
+
+    if "email" in data:
+        email = (data.get("email") or "").strip().lower()
+        if not email:
+            return jsonify(error="Email не может быть пустым"), 400
+        other = User.query.filter_by(email=email).first()
+        if other and other.id != current_user.id:
+            return jsonify(error="Этот email уже занят"), 409
+        current_user.email = email
+
+    if data.get("password"):
+        if len(data["password"]) < 4:
+            return jsonify(error="Пароль слишком короткий"), 400
+        current_user.set_password(data["password"])
+
+    db.session.commit()
+    return jsonify(current_user.to_dict())

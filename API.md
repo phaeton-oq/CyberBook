@@ -21,6 +21,13 @@ Base URL при разработке: `http://localhost:5000`
 | POST | `/api/auth/login` | `{email, password}` | user |
 | POST | `/api/auth/logout` | — | `{ok:true}` |
 | GET  | `/api/auth/me` | — | user / 401 |
+| PATCH | `/api/auth/me` | `{name?, department?, email?, password?}` | обновлённый user |
+
+## Админ — управление сотрудниками  *(только admin)*
+| метод | путь | тело | ответ |
+|-------|------|------|-------|
+| POST | `/api/admin/users` | `{name, email, password, department?}` | созданный user |
+| DELETE | `/api/admin/users/<id>` | — | `{ok:true}` (нельзя удалить себя/админа) |
 
 `user = {id, name, email, role, department, security_score, points, badges:[{name,icon}]}`
 

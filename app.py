@@ -34,8 +34,9 @@ def create_app(config_class=Config):
     from blueprints.assistant import assistant_bp
     from blueprints.stats import stats_bp
     from blueprints.scan import scan_bp
+    from blueprints.admin import admin_bp
 
-    for bp in (auth_bp, courses_bp, quiz_bp, phishing_bp, assistant_bp, stats_bp, scan_bp):
+    for bp in (auth_bp, courses_bp, quiz_bp, phishing_bp, assistant_bp, stats_bp, scan_bp, admin_bp):
         app.register_blueprint(bp)
 
     @app.get("/")

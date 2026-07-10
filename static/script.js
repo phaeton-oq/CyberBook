@@ -19,6 +19,9 @@ const API = {
     login: (email, password) => apiFetch("/api/auth/login", { method: "POST", body: { email, password } }),
     register: (p) => apiFetch("/api/auth/register", { method: "POST", body: p }),
     logout: () => apiFetch("/api/auth/logout", { method: "POST" }),
+    updateProfile: (p) => apiFetch("/api/auth/me", { method: "PATCH", body: p }),
+    createUser: (p) => apiFetch("/api/admin/users", { method: "POST", body: p }),
+    deleteUser: (id) => apiFetch(`/api/admin/users/${id}`, { method: "DELETE" }),
     courses: () => apiFetch("/api/courses"),
     course: (id) => apiFetch(`/api/courses/${id}`),
     completeCourse: (id) => apiFetch(`/api/courses/${id}/complete`, { method: "POST" }),
@@ -322,10 +325,10 @@ async function initAdmin() {
         const rows = await API.usersStats();
         document.getElementById("employees-list").innerHTML = rows.map(u => `
             <tr>
-                <td><span class="tag-name">${esc(u.name)}</span></td>
+                <td><span class="tag-name">${esc(u.name)}</span> <span style="color:var(--gray-muted);font-size:13px;">${esc(u.department)}</span></td>
                 <td>${u.security_score} / 100</td>
                 <td class="${u.security_score >= 50 ? "ok-status" : "warn-status"}">${u.security_score >= 50 ? "Безопасен" : "В зоне риска"}</td>
-                <td><button class="btn-del" onclick="deleteEmployee(this)">Удалить</button></td>
+                <td><button class="btn-del" data-user-id="${u.id}" onclick="deleteEmployee(this)">Удалить</button></td>
             </tr>`).join("");
     } catch (e) { /* не админ или ошибка */ }
 }
@@ -345,20 +348,56 @@ async function initProfile() {
     document.getElementById("input-profile-role").value = user.department;
     document.getElementById("input-profile-email").value = user.email;
 }
-function saveProfileData() {
+async function saveProfileData() {
     const status = document.getElementById("profile-save-status");
-    // бэкенд-эндпоинта обновления профиля нет — обновляем отображение локально
-    document.getElementById("profile-display-name").textContent = document.getElementById("input-profile-name").value;
-    document.getElementById("profile-display-role").textContent = document.getElementById("input-profile-role").value;
-    if (status) { status.style.display = "block"; setTimeout(() => status.style.display = "none", 3000); }
+    const payload = {
+        name: document.getElementById("input-profile-name").value.trim(),
+        department: document.getElementById("input-profile-role").value.trim(),
+        email: document.getElementById("input-profile-email").value.trim(),
+    };
+    const pass = document.getElementById("input-profile-pass").value;
+    if (pass) payload.password = pass;
+    try {
+        const user = await API.updateProfile(payload);
+        document.getElementById("profile-display-name").textContent = user.name;
+        document.getElementById("profile-display-role").textContent = user.department;
+        document.getElementById("input-profile-pass").value = "";
+        if (status) {
+            status.style.color = "var(--success)";
+            status.textContent = "✓ Изменения успешно сохранены!";
+            status.style.display = "block";
+            setTimeout(() => status.style.display = "none", 3000);
+        }
+    } catch (e) {
+        if (status) {
+            status.style.color = "var(--primary)";
+            status.textContent = e.message;
+            status.style.display = "block";
+        }
+    }
 }
 
-// локальные (косметические) операции админ-таблицы — без бэкенда
-function deleteEmployee(btn) {
-    if (confirm("Удалить сотрудника из таблицы? (локально, без сохранения)")) {
-        const row = btn.closest("tr");
-        if (row) row.remove();
-    }
+// добавление/удаление сотрудников — через реальный API (только админ)
+async function addEmployee() {
+    const name = prompt("Имя нового сотрудника:");
+    if (!name || !name.trim()) return;
+    const email = prompt("Email сотрудника:");
+    if (!email || !email.trim()) return;
+    const department = prompt("Отдел:", "Общий") || "Общий";
+    const password = prompt("Временный пароль:", "user123") || "user123";
+    try {
+        await API.createUser({ name: name.trim(), email: email.trim(), department, password });
+        initAdmin();
+    } catch (e) { alert(e.message); }
+}
+async function deleteEmployee(btn) {
+    const id = btn.dataset.userId;
+    if (!id) { btn.closest("tr")?.remove(); return; }
+    if (!confirm("Удалить этого сотрудника безвозвратно?")) return;
+    try {
+        await API.deleteUser(id);
+        btn.closest("tr")?.remove();
+    } catch (e) { alert(e.message); }
 }
 
 // ---------- роутер: инициализация по элементам страницы ----------
